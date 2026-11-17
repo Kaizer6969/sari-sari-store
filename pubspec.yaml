@@ -1,0 +1,40 @@
+name: sari_sari_store
+description: "Sari-Sari Store - A Filipino store management pixel game"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/customers/
+    - assets/images/own_pixel_store.png
+    - assets/images/pixel_store_clean.png
+    - assets/images/tinay.png
+    - assets/images/scammer.png
+    - assets/images/bongbong.png
+    - assets/images/customer_girl.png
+    - assets/images/mang_boy.png
+    - assets/images/totoy.png
+    - assets/images/kuya_green.png
+    - assets/images/customers/tinay.png
+    - assets/images/customers/scammer.png
+    - assets/images/customers/bongbong.png
+    - assets/images/customers/customer_girl.png
+    - assets/images/customers/mang_boy.png
+    - assets/images/customers/totoy.png
+    - assets/images/customers/kuya_green.png
