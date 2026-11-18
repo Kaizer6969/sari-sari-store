@@ -23,7 +23,13 @@ flutter:
     - assets/images/
     - assets/images/customers/
     - assets/images/vehicles/
+    - assets/images/items/
     - assets/images/own_pixel_store.png
+    - assets/images/own_pixel_store_empty.jpg
+    - assets/images/own_pixel_store_closed.jpg
+    - assets/images/bodega_rack_bg.jpg
+    - assets/images/back_room_ref_bg.jpg
+    - assets/images/garage_bg.jpg
     - assets/images/pixel_store_clean.png
     - assets/images/tinay.png
     - assets/images/scammer.png

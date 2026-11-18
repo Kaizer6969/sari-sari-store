@@ -30,7 +30,7 @@ void main() {
     // Advance past initial spawn timer
     await tester.pump(const Duration(milliseconds: 1600));
     expect(find.byType(CustomerOrderChecklistCard), findsOneWidget);
-    expect(find.byType(ShelfHotspotButton), findsWidgets);
+    expect(find.byType(DynamicShelfStockWidget), findsWidgets);
     expect(find.text('⏱️ 40s'), findsOneWidget);
   });
 

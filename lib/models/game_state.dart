@@ -1,15 +1,36 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../services/sound_service.dart';
+
+enum RestockResult {
+  restocked,
+  restockedAndBoxEmpty,
+  shelfFull,
+  wrongShelf,
+  noBoxHeld,
+}
 
 class GameState extends ChangeNotifier {
+  static const int maxShelfCapacity = 10;
+
   double money;
   int day;
   int hour; // 6 to 23
   int minute; // 0 to 59
   bool storeOpen;
   bool hasPermit;
-  Map<String, int> inventory;
+  Map<String, int> inventory; // Live stock currently placed on store shelves
+  Map<String, int> bodegaBoxes; // Sealed boxes stored on the back-room rack
+  Map<String, int> garageBoxes; // Delivered boxes waiting on the Garage floor!
+  Map<String, int> incomingDeliveryBoxes; // Boxes currently on the delivery truck
+  Map<String, int> supermarketBought; // Cumulative stock bought from Supermarket/PC
+  String? heldBoxItemId; // Item inside the box currently held by the player
+  int heldBoxQty; // Remaining pcs inside the held box
+  bool hasNewDeliveryAlert; // Pulses garage door when truck honks & delivers!
+  int deliveryArrivalVersion; // Increments every time a delivery truck arrives
+  Timer? _deliveryTimer;
   int reputation; // 0 to 100
   int totalSales;
   double totalEarned;
@@ -24,12 +45,23 @@ class GameState extends ChangeNotifier {
     required this.storeOpen,
     required this.hasPermit,
     required this.inventory,
+    Map<String, int>? bodegaBoxes,
+    Map<String, int>? garageBoxes,
+    Map<String, int>? incomingDeliveryBoxes,
+    Map<String, int>? supermarketBought,
+    this.heldBoxItemId,
+    this.heldBoxQty = 0,
+    this.hasNewDeliveryAlert = false,
+    this.deliveryArrivalVersion = 0,
     required this.reputation,
     required this.totalSales,
     required this.totalEarned,
     required this.scammersRejected,
     required this.scammedCount,
-  });
+  }) : bodegaBoxes = bodegaBoxes ?? {},
+       garageBoxes = garageBoxes ?? {},
+       incomingDeliveryBoxes = incomingDeliveryBoxes ?? {},
+       supermarketBought = supermarketBought ?? {};
 
   /// Bagong Laro (New Game) constructor
   factory GameState.newGame() {
@@ -66,6 +98,51 @@ class GameState extends ChangeNotifier {
 
   int getStock(String itemId) {
     return inventory[itemId] ?? 0;
+  }
+
+  int getBoxStock(String itemId) {
+    return bodegaBoxes[itemId] ?? 0;
+  }
+
+  int getGarageBoxStock(String itemId) {
+    return garageBoxes[itemId] ?? 0;
+  }
+
+  bool get isHoldingBox => heldBoxItemId != null && heldBoxQty > 0;
+
+  bool get hasIncomingDelivery =>
+      incomingDeliveryBoxes.values.any((qty) => qty > 0);
+
+  int get totalGarageBoxCount {
+    int count = 0;
+    for (final qty in garageBoxes.values) {
+      if (qty > 0) count++;
+    }
+    return count;
+  }
+
+  int get totalGarageBoxItems {
+    int total = 0;
+    for (final qty in garageBoxes.values) {
+      total += qty;
+    }
+    return total;
+  }
+
+  int get totalBodegaBoxItems {
+    int total = 0;
+    for (final qty in bodegaBoxes.values) {
+      total += qty;
+    }
+    return total;
+  }
+
+  int get totalBodegaBoxCount {
+    int count = 0;
+    for (final qty in bodegaBoxes.values) {
+      if (qty > 0) count++;
+    }
+    return count;
   }
 
   double get totalInventoryValue {
@@ -113,7 +190,7 @@ class GameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Bumili ng paninda sa supermarket (Wholesale)
+  /// Bumili ng paninda sa supermarket (Direct stock add - kept for unit tests)
   bool buyStock(String itemId, int qty) {
     final item = GameConstants.itemById(itemId);
     if (item == null || qty <= 0) return false;
@@ -128,8 +205,190 @@ class GameState extends ChangeNotifier {
 
     money -= totalCost;
     inventory[itemId] = (inventory[itemId] ?? 0) + qty;
+    supermarketBought[itemId] = (supermarketBought[itemId] ?? 0) + qty;
     notifyListeners();
     return true;
+  }
+
+  /// Bumili ng bultuhang BOX sa supermarket -> mailalagay muna sa Storage Rack sa likod!
+  bool buyWholesaleBox(String itemId, int qty) {
+    final item = GameConstants.itemById(itemId);
+    if (item == null || qty <= 0) return false;
+
+    if (item.needsPermit && !hasPermit) {
+      return false;
+    }
+
+    final totalCost = item.wholesalePrice * qty;
+    if (money < totalCost) return false;
+
+    money -= totalCost;
+    bodegaBoxes[itemId] = (bodegaBoxes[itemId] ?? 0) + qty;
+    supermarketBought[itemId] = (supermarketBought[itemId] ?? 0) + qty;
+    notifyListeners();
+    return true;
+  }
+
+  /// Umorder sa Computer -> Idideliver ng truck sa Garahe pagkatapos ng maikling sandali at bubusina ang truck!
+  bool orderOnlineFromComputer(
+    Map<String, int> cart, {
+    Duration deliveryDelay = const Duration(seconds: 5),
+    VoidCallback? onArrived,
+  }) {
+    if (cart.isEmpty) return false;
+
+    double totalCost = 0.0;
+    for (final entry in cart.entries) {
+      final item = GameConstants.itemById(entry.key);
+      if (item == null || entry.value <= 0) return false;
+      if (item.needsPermit && !hasPermit) return false;
+      totalCost += item.wholesalePrice * entry.value;
+    }
+
+    if (money < totalCost) return false;
+
+    money -= totalCost;
+    cart.forEach((itemId, qty) {
+      incomingDeliveryBoxes[itemId] =
+          (incomingDeliveryBoxes[itemId] ?? 0) + qty;
+      supermarketBought[itemId] = (supermarketBought[itemId] ?? 0) + qty;
+    });
+    notifyListeners();
+
+    _deliveryTimer?.cancel();
+    if (deliveryDelay == Duration.zero) {
+      deliverIncomingNow();
+      onArrived?.call();
+    } else {
+      _deliveryTimer = Timer(deliveryDelay, () {
+        deliverIncomingNow();
+        onArrived?.call();
+      });
+    }
+    return true;
+  }
+
+  /// Dumating na ang delivery truck sa Garahe -> bubusina ang truck at ilalapag lahat ng boxes sa Garahe!
+  void deliverIncomingNow() {
+    _deliveryTimer?.cancel();
+    if (incomingDeliveryBoxes.isEmpty) return;
+
+    incomingDeliveryBoxes.forEach((itemId, qty) {
+      if (qty > 0) {
+        garageBoxes[itemId] = (garageBoxes[itemId] ?? 0) + qty;
+      }
+    });
+    incomingDeliveryBoxes.clear();
+    hasNewDeliveryAlert = true;
+    deliveryArrivalVersion += 1;
+
+    // 🎺 Play real delivery truck air horn sound!
+    SoundService.playTruckHorn();
+    notifyListeners();
+  }
+
+  /// Linisin ang delivery alert badge kapag nakapasok na ang player sa Garahe
+  void clearDeliveryAlert() {
+    if (!hasNewDeliveryAlert) return;
+    hasNewDeliveryAlert = false;
+    notifyListeners();
+  }
+
+  /// Buhatin ang delivery box mula sa sahig ng Garahe
+  bool pickUpGarageBox(String itemId) {
+    final available = garageBoxes[itemId] ?? 0;
+    if (available <= 0) return false;
+
+    // Kung may hawak na ibang box, ibalik muna ito nang maayos sa Garahe
+    if (isHoldingBox && heldBoxItemId != itemId) {
+      garageBoxes[heldBoxItemId!] =
+          (garageBoxes[heldBoxItemId!] ?? 0) + heldBoxQty;
+      heldBoxItemId = null;
+      heldBoxQty = 0;
+    }
+
+    if (heldBoxItemId == itemId) {
+      heldBoxQty += available;
+    } else {
+      heldBoxItemId = itemId;
+      heldBoxQty = available;
+    }
+    garageBoxes.remove(itemId);
+    hasNewDeliveryAlert = false;
+    notifyListeners();
+    return true;
+  }
+
+  /// Ilapag pabalik sa sahig ng Garahe ang hawak na box
+  void putDownHeldBoxToGarage() {
+    if (!isHoldingBox) return;
+    final id = heldBoxItemId!;
+    garageBoxes[id] = (garageBoxes[id] ?? 0) + heldBoxQty;
+    heldBoxItemId = null;
+    heldBoxQty = 0;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _deliveryTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Kunin / Buhatin ang box mula sa Storage Rack
+  bool pickUpBox(String itemId) {
+    final available = bodegaBoxes[itemId] ?? 0;
+    if (available <= 0) return false;
+
+    // Kung may hawak na ibang box, ibalik muna ito nang maayos sa rack
+    if (isHoldingBox && heldBoxItemId != itemId) {
+      bodegaBoxes[heldBoxItemId!] =
+          (bodegaBoxes[heldBoxItemId!] ?? 0) + heldBoxQty;
+      heldBoxItemId = null;
+      heldBoxQty = 0;
+    }
+
+    if (heldBoxItemId == itemId) {
+      heldBoxQty += available;
+    } else {
+      heldBoxItemId = itemId;
+      heldBoxQty = available;
+    }
+    bodegaBoxes.remove(itemId);
+    notifyListeners();
+    return true;
+  }
+
+  /// Ilapag pabalik sa Storage Rack ang hawak na box
+  void putDownHeldBox() {
+    if (!isHoldingBox) return;
+    final id = heldBoxItemId!;
+    bodegaBoxes[id] = (bodegaBoxes[id] ?? 0) + heldBoxQty;
+    heldBoxItemId = null;
+    heldBoxQty = 0;
+    notifyListeners();
+  }
+
+  /// Mag-restock ng 1 piraso mula sa hawak na box papunta sa tamang estante (ulit-ulitin hanggang mapuno!)
+  RestockResult restockOneFromHeldBox(String targetItemId) {
+    if (!isHoldingBox) return RestockResult.noBoxHeld;
+    if (heldBoxItemId != targetItemId) return RestockResult.wrongShelf;
+
+    final current = getStock(targetItemId);
+    if (current >= maxShelfCapacity) return RestockResult.shelfFull;
+
+    inventory[targetItemId] = current + 1;
+    heldBoxQty -= 1;
+
+    if (heldBoxQty <= 0) {
+      heldBoxItemId = null;
+      heldBoxQty = 0;
+      notifyListeners();
+      return RestockResult.restockedAndBoxEmpty;
+    }
+
+    notifyListeners();
+    return RestockResult.restocked;
   }
 
   /// Magbenta sa customer (Retail)
@@ -210,6 +469,16 @@ class GameState extends ChangeNotifier {
       'storeOpen': storeOpen,
       'hasPermit': hasPermit,
       'inventory': inventory,
+      'bodegaBoxes': bodegaBoxes,
+      'garageBoxes': {
+        ...garageBoxes,
+        for (final e in incomingDeliveryBoxes.entries)
+          e.key: (garageBoxes[e.key] ?? 0) + e.value,
+      },
+      'supermarketBought': supermarketBought,
+      'heldBoxItemId': heldBoxItemId,
+      'heldBoxQty': heldBoxQty,
+      'hasNewDeliveryAlert': hasNewDeliveryAlert,
       'reputation': reputation,
       'totalSales': totalSales,
       'totalEarned': totalEarned,
@@ -230,6 +499,21 @@ class GameState extends ChangeNotifier {
             (k, v) => MapEntry(k, v as int),
           ) ??
           GameConstants.startingInventory,
+      bodegaBoxes: (json['bodegaBoxes'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, v as int),
+          ) ??
+          {},
+      garageBoxes: (json['garageBoxes'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, v as int),
+          ) ??
+          {},
+      supermarketBought: (json['supermarketBought'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, v as int),
+          ) ??
+          {},
+      heldBoxItemId: json['heldBoxItemId'] as String?,
+      heldBoxQty: json['heldBoxQty'] as int? ?? 0,
+      hasNewDeliveryAlert: json['hasNewDeliveryAlert'] as bool? ?? false,
       reputation: json['reputation'] as int? ?? 80,
       totalSales: json['totalSales'] as int? ?? 0,
       totalEarned: (json['totalEarned'] as num?)?.toDouble() ?? 0.0,

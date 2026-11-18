@@ -58,10 +58,14 @@ class _SupermarketScreenState extends State<SupermarketScreen> {
       return;
     }
 
-    // Process Purchase
-    _itemsToBuy.forEach((itemId, qty) {
-      widget.gameState.buyStock(itemId, qty);
-    });
+    // Process Purchase -> Delivery truck brings boxes to the open-gate Garage in 5s and honks!
+    widget.gameState.orderOnlineFromComputer(
+      Map<String, int>.from(_itemsToBuy),
+      deliveryDelay: const Duration(seconds: 5),
+      onArrived: () {
+        SaveManager.saveGame(widget.gameState);
+      },
+    );
 
     SaveManager.saveGame(widget.gameState);
 
@@ -74,13 +78,13 @@ class _SupermarketScreenState extends State<SupermarketScreen> {
               side: BorderSide(color: Color(0xFF27AE60), width: 3),
             ),
             title: const PixelText(
-              'Matagumpay na Namili! 🎉',
+              'Na-order na sa Computer! 🚚',
               size: 15,
               color: Color(0xFF2ECC71),
             ),
             content: PixelText(
-              'Nabayaran ang ₱${total.toStringAsFixed(0)}.\nNailagay na ang mga paninda sa iyong sari-sari store!',
-              size: 12,
+              'Nabayaran ang ₱${total.toStringAsFixed(0)}.\n\nPaparating na ang delivery truck sa GARAHE! Hintayin ang busina ng truck (🎺 HONK! HONK!) pagkalipas ng 5 segundo, at pindutin ang kaliwang pinto (🚪 GARAHE) sa tindahan para buhatin ang mga box!',
+              size: 11,
               color: Colors.white,
             ),
             actions: [
@@ -113,7 +117,7 @@ class _SupermarketScreenState extends State<SupermarketScreen> {
         backgroundColor: const Color(0xFF1E3A56),
         elevation: 0,
         title: const PixelText(
-          '🛒 SUPERMARKET (Bultuhan)',
+          '💻 ORDER PC • SUPERMARKET (Bultuhan)',
           size: 14,
           color: Colors.amberAccent,
         ),

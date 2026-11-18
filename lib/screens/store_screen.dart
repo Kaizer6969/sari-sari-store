@@ -3,16 +3,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../utils/constants.dart';
+import '../utils/item_image_data.dart';
 import '../services/save_manager.dart';
 import '../widgets/pixel_text.dart';
 import '../widgets/pixel_button.dart';
 import '../widgets/pixel_customer_sprite.dart';
 import '../widgets/pixel_road_vehicle.dart';
 import '../widgets/shelf_hotspot.dart';
+import '../widgets/held_box_hud.dart';
 import '../widgets/transaction_dialog.dart';
 import '../widgets/scam_dialog.dart';
 import 'map_screen.dart';
 import 'inventory_screen.dart';
+import 'back_room_screen.dart';
+import 'garage_screen.dart';
 import 'title_screen.dart';
 
 class StoreScreen extends StatefulWidget {
@@ -43,6 +47,7 @@ class _StoreScreenState extends State<StoreScreen>
   int _customerTimeLeft = _maxCustomerSeconds;
   bool _isPausedForDialog = false;
   String? _lastPickedItemId;
+  String? _lastRestockedItemId;
   String? _lastWrongItemId;
 
   int get _totalRequiredCount {
@@ -75,6 +80,7 @@ class _StoreScreenState extends State<StoreScreen>
   VehicleType _currentVehicleType = VehicleType.jeepney;
   bool _vehicleMovingRight = true;
   bool _isVehicleActive = false;
+  int _lastSeenDeliveryVersion = 0;
   final Random _rng = Random();
 
   @override
@@ -82,6 +88,8 @@ class _StoreScreenState extends State<StoreScreen>
     super.initState();
 
     widget.gameState.storeOpen = true;
+    _lastSeenDeliveryVersion = widget.gameState.deliveryArrivalVersion;
+    widget.gameState.addListener(_onGameStateChanged);
 
     // Vehicle Traffic Animation (smooth cruise across the street)
     _vehicleAnimController = AnimationController(
@@ -120,8 +128,31 @@ class _StoreScreenState extends State<StoreScreen>
     });
   }
 
+  void _onGameStateChanged() {
+    if (!mounted) return;
+    if (widget.gameState.deliveryArrivalVersion != _lastSeenDeliveryVersion) {
+      _lastSeenDeliveryVersion = widget.gameState.deliveryArrivalVersion;
+      if (ModalRoute.of(context)?.isCurrent ?? true) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFFD68910),
+            duration: const Duration(milliseconds: 3000),
+            content: PixelText(
+              '🚚🎺 HONK! HONK! Dumating na ang delivery truck sa Garahe! Pindutin ang kaliwang pinto (🚪 GARAHE)!',
+              size: 10.5,
+              color: Colors.white,
+            ),
+          ),
+        );
+      }
+    }
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    widget.gameState.removeListener(_onGameStateChanged);
     _initSpawnTimer?.cancel();
     _initTrafficTimer?.cancel();
     _inGameClockTimer?.cancel();
@@ -248,14 +279,103 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   void _onShelfItemTapped(String itemId) {
-    if (!widget.gameState.storeOpen || _currentCustomer == null) return;
+    final state = widget.gameState;
+    final item = GameConstants.itemById(itemId);
+    if (item == null) return;
+
+    // ── PRIORITY 1: RESTOCKING FROM HELD BOX (+1 per tap until full or empty!) ──
+    if (state.isHoldingBox) {
+      _pickFeedbackTimer?.cancel();
+      if (state.heldBoxItemId == itemId) {
+        final res = state.restockOneFromHeldBox(itemId);
+        SaveManager.saveGame(state);
+
+        if (res == RestockResult.restocked ||
+            res == RestockResult.restockedAndBoxEmpty) {
+          setState(() {
+            _lastRestockedItemId = itemId;
+            _lastPickedItemId = null;
+            _lastWrongItemId = null;
+          });
+          _pickFeedbackTimer = Timer(const Duration(milliseconds: 350), () {
+            if (mounted) {
+              setState(() => _lastRestockedItemId = null);
+            }
+          });
+
+          if (res == RestockResult.restockedAndBoxEmpty) {
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF27AE60),
+                duration: const Duration(milliseconds: 1600),
+                content: PixelText(
+                  '✅ Ubos na ang laman ng box ng ${item.name}! (Stock: ${state.getStock(itemId)}/${GameState.maxShelfCapacity})',
+                  size: 10.5,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          }
+        } else if (res == RestockResult.shelfFull) {
+          setState(() {
+            _lastWrongItemId = itemId;
+            _lastRestockedItemId = null;
+          });
+          _pickFeedbackTimer = Timer(const Duration(milliseconds: 450), () {
+            if (mounted) {
+              setState(() => _lastWrongItemId = null);
+            }
+          });
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFFD35400),
+              duration: const Duration(milliseconds: 1500),
+              content: PixelText(
+                '📦 PUNO NA ang lalagyan ng ${item.name}! (${GameState.maxShelfCapacity}/${GameState.maxShelfCapacity}) Ilapag ang sobra sa Rack sa likod.',
+                size: 10,
+                color: Colors.white,
+              ),
+            ),
+          );
+        }
+        return;
+      } else if (!state.storeOpen || _currentCustomer == null) {
+        // Holding another item's box while no customer is waiting
+        final heldItem = GameConstants.itemById(state.heldBoxItemId!);
+        final heldName = heldItem?.name ?? state.heldBoxItemId!;
+        setState(() {
+          _lastWrongItemId = itemId;
+          _lastRestockedItemId = null;
+        });
+        _pickFeedbackTimer = Timer(const Duration(milliseconds: 450), () {
+          if (mounted) {
+            setState(() => _lastWrongItemId = null);
+          }
+        });
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFFD35400),
+            duration: const Duration(milliseconds: 1300),
+            content: PixelText(
+              '📦 Hawak mo ang box ng $heldName! Pindutin ang lalagyan ng $heldName para mag-restock!',
+              size: 10,
+              color: Colors.white,
+            ),
+          ),
+        );
+        return;
+      }
+    }
+
+    // ── PRIORITY 2: GRABBING ITEMS FOR WAITING CUSTOMER'S SHOPPING LIST ──
+    if (!state.storeOpen || _currentCustomer == null) return;
     if (_allItemsPicked) {
       _serveCustomer();
       return;
     }
-
-    final item = GameConstants.itemById(itemId);
-    if (item == null) return;
 
     final customer = _currentCustomer!;
     final needed = customer.items[itemId] ?? 0;
@@ -285,7 +405,7 @@ class _StoreScreenState extends State<StoreScreen>
             backgroundColor: const Color(0xFF27AE60),
             duration: const Duration(milliseconds: 1600),
             content: PixelText(
-              '✅ Kumpleto na ang order ni ${customer.customerName}! Pindutin ang SERVE CUSTOMER!',
+              '✅ Kumpleto na ang order ni ${customer.customerName}! Pindutin ang 🛍️ HANDA NA o ang customer para ibenta!',
               size: 10.5,
               color: Colors.white,
             ),
@@ -648,29 +768,68 @@ class _StoreScreenState extends State<StoreScreen>
     }
   }
 
-  void _pleaseWaitCustomer() {
-    if (_currentCustomer != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: const Color(0xFFD35400),
-          duration: const Duration(milliseconds: 1200),
-          content: PixelText(
-            'Sandali lang! May $_customerTimeLeft segundo ka pa para kay ${_currentCustomer!.customerName}!',
-            size: 10,
-            color: Colors.white,
-          ),
-        ),
-      );
-    } else {
-      // Toggle store open/close
+  void _goToBackRoom() {
+    setState(() {
+      _isPausedForDialog = true;
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BackRoomScreen(gameState: widget.gameState),
+      ),
+    ).then((_) {
+      if (!mounted) return;
       setState(() {
-        widget.gameState.toggleStore();
+        _isPausedForDialog = false;
         if (!widget.gameState.storeOpen) {
           _clearCurrentCustomer();
         }
       });
-      SaveManager.saveGame(widget.gameState);
-    }
+    });
+  }
+
+  void _goToGarage() {
+    setState(() {
+      _isPausedForDialog = true;
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GarageScreen(gameState: widget.gameState),
+      ),
+    ).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _isPausedForDialog = false;
+      });
+    });
+  }
+
+  void _toggleStoreOpenClose() {
+    setState(() {
+      widget.gameState.toggleStore();
+      if (!widget.gameState.storeOpen) {
+        _clearCurrentCustomer();
+      }
+    });
+    SaveManager.saveGame(widget.gameState);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor:
+            widget.gameState.storeOpen
+                ? const Color(0xFF27AE60)
+                : const Color(0xFFC0392B),
+        duration: const Duration(milliseconds: 1100),
+        content: PixelText(
+          widget.gameState.storeOpen
+              ? '🟢 Bukas na ang tindahan! Handa na sa mga bibili!'
+              : '🔴 Nakasara muna ang tindahan.',
+          size: 10.5,
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 
   void _openPauseMenu() {
@@ -965,10 +1124,14 @@ class _StoreScreenState extends State<StoreScreen>
           return Stack(
             fit: StackFit.expand,
             children: [
-              // 1. BRAND NEW ORIGINAL 16-BIT PIXEL ART SARI-SARI STORE (Edge-to-Edge)
+              // 1. 16-BIT PIXEL ART SARI-SARI STORE (Open Shutters vs Closed Bolted Shutters!)
+              // Products are rendered dynamically on top based on live inventory!
               Positioned.fill(
-                child: Image.asset(
-                  'assets/images/own_pixel_store.png',
+                child: Image.memory(
+                  state.storeOpen
+                      ? ItemImageData.emptyStoreBgBytes
+                      : ItemImageData.closedStoreBgBytes,
+                  gaplessPlayback: true,
                   width: w,
                   height: h,
                   fit: BoxFit.fill,
@@ -976,12 +1139,13 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
               ),
 
-              // 2. OUTSIDE WINDOW APERTURE (Sky Tint + Passing Traffic + Customer Standing Outside Behind Sill)
-              Positioned(
-                left: windowLeft,
-                top: windowTop,
-                width: windowWidth,
-                height: windowHeight,
+              // 2. OUTSIDE WINDOW APERTURE (Only visible when window shutters are OPEN!)
+              if (state.storeOpen)
+                Positioned(
+                  left: windowLeft,
+                  top: windowTop,
+                  width: windowWidth,
+                  height: windowHeight,
                 child: ClipRect(
                   child: Stack(
                     children: [
@@ -1157,7 +1321,126 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
               ),
 
-              // 5. OVERALL COZY STORE LIGHTING AT NIGHT
+              // 5. DYNAMIC LIVE INVENTORY ON SHELVES, HANGING ROD & COUNTER
+              // Only items you currently have in stock appear (plus active restock target when holding a box!)
+              for (final zone in ShelfHotspotZone.allZones)
+                () {
+                  final item = GameConstants.itemById(zone.itemId);
+                  if (item == null) return const SizedBox.shrink();
+
+                  final totalStock = state.getStock(zone.itemId);
+                  final picked = _pickedItems[zone.itemId] ?? 0;
+                  final visibleStock = (totalStock - picked).clamp(0, 999);
+                  final isRestockTarget =
+                      state.isHoldingBox && state.heldBoxItemId == zone.itemId;
+                  final isPicking =
+                      state.storeOpen &&
+                      _currentCustomer != null &&
+                      !_allItemsPicked;
+                  final needed = _currentCustomer?.items[zone.itemId] ?? 0;
+                  final stillNeedsThis = needed > 0 && picked < needed;
+                  final showUrgentHint =
+                      isPicking && stillNeedsThis && _customerTimeLeft <= 12;
+
+                  return Positioned(
+                    left: w * zone.leftFrac,
+                    top: h * zone.topFrac,
+                    width: w * zone.widthFrac,
+                    height: h * zone.heightFrac,
+                    child: DynamicShelfStockWidget(
+                      zone: zone,
+                      item: item,
+                      visibleStock: visibleStock,
+                      maxCapacity: GameState.maxShelfCapacity,
+                      screenHeight: h,
+                      isInteractive: isPicking || state.isHoldingBox,
+                      isRestockTarget: isRestockTarget,
+                      showUrgentHint: showUrgentHint,
+                      justPicked: _lastPickedItemId == zone.itemId,
+                      justRestocked: _lastRestockedItemId == zone.itemId,
+                      justWrong: _lastWrongItemId == zone.itemId,
+                      onTap: () => _onShelfItemTapped(zone.itemId),
+                    ),
+                  );
+                }(),
+
+              // 5A. CLICKABLE LEFT WOODEN DOOR -> OPENS GARAGE (GARAHE) FOR DELIVERIES!
+              Positioned(
+                left: 0,
+                top: h * 0.14,
+                width: w * 0.160,
+                height: h * 0.72,
+                child: GestureDetector(
+                  onTap: _goToGarage,
+                  behavior: HitTestBehavior.opaque,
+                  child: Align(
+                    alignment: const Alignment(0.0, 0.35),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            (state.hasNewDeliveryAlert ||
+                                    state.totalGarageBoxCount > 0)
+                                ? const Color(0xF5D68910)
+                                : const Color(0xD93E2723),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color:
+                              (state.hasNewDeliveryAlert ||
+                                      state.totalGarageBoxCount > 0)
+                                  ? const Color(0xFFFFF176)
+                                  : const Color(0xFFD7CCC8),
+                          width:
+                              (state.hasNewDeliveryAlert ||
+                                      state.totalGarageBoxCount > 0)
+                                  ? 2.2
+                                  : 1.4,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black87,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PixelText(
+                            state.totalGarageBoxCount > 0
+                                ? '🚚 GARAHE'
+                                : '🚪 GARAHE',
+                            size: 9.5,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          if (state.totalGarageBoxCount > 0) ...[
+                            const SizedBox(height: 2),
+                            PixelText(
+                              '📦 ${state.totalGarageBoxCount} Box!',
+                              size: 8.5,
+                              color: const Color(0xFFFFF176),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ] else if (state.hasIncomingDelivery) ...[
+                            const SizedBox(height: 2),
+                            const PixelText(
+                              '🚚 Paparating...',
+                              size: 7.5,
+                              color: Color(0xFFFFE082),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5B. OVERALL COZY STORE LIGHTING AT NIGHT (IgnorePointer so shelves stay tappable!)
               if (hour >= 19 || hour < 6)
                 Positioned.fill(
                   child: IgnorePointer(
@@ -1172,39 +1455,6 @@ class _StoreScreenState extends State<StoreScreen>
                     ),
                   ),
                 ),
-
-              // 6. INTERACTIVE SHELF & COUNTER HOTSPOTS (Player grabs customer's list items!)
-              if (state.storeOpen &&
-                  _currentCustomer != null &&
-                  !_allItemsPicked) ...[
-                for (final zone in ShelfHotspotZone.allZones)
-                  if (state.getStock(zone.itemId) > 0)
-                    () {
-                      final item = GameConstants.itemById(zone.itemId);
-                      if (item == null) return const SizedBox.shrink();
-                      final needed = _currentCustomer!.items[zone.itemId] ?? 0;
-                      final picked = _pickedItems[zone.itemId] ?? 0;
-                      final stillNeedsThis = needed > 0 && picked < needed;
-                      // Gentle golden hint during the final 12 seconds if player is still searching
-                      final showUrgentHint =
-                          stillNeedsThis && _customerTimeLeft <= 12;
-
-                      return Positioned(
-                        left: w * zone.leftFrac,
-                        top: h * zone.topFrac,
-                        width: w * zone.widthFrac,
-                        height: h * zone.heightFrac,
-                        child: ShelfHotspotButton(
-                          item: item,
-                          stock: state.getStock(zone.itemId),
-                          showUrgentHint: showUrgentHint,
-                          justPicked: _lastPickedItemId == zone.itemId,
-                          justWrong: _lastWrongItemId == zone.itemId,
-                          onTap: () => _onShelfItemTapped(zone.itemId),
-                        ),
-                      );
-                    }(),
-              ],
 
               // 6B. PACKED ORDER BAG ON COUNTER (Once all items are gathered, ready to sell!)
               if (state.storeOpen &&
@@ -1461,7 +1711,7 @@ class _StoreScreenState extends State<StoreScreen>
                         ),
                         const SizedBox(height: 5),
                         const PixelText(
-                          'Pindutin ang [🔴 PLEASE WAIT] sa ibaba para magbukas muli!',
+                          'Pindutin ang [🟢 BUKSAN ANG TINDAHAN] sa ibaba para magbukas muli!',
                           size: 10,
                           color: Colors.white70,
                           textAlign: TextAlign.center,
@@ -1471,41 +1721,51 @@ class _StoreScreenState extends State<StoreScreen>
                   ),
                 ),
 
-              // 10. BOTTOM ACTION BUTTONS (MATCHING REFERENCE PHOTO EXACTLY)
+              // 10. BOTTOM ACTION BUTTONS (LEFT: Arrow to Back Room | RIGHT: Close / Open Store)
+              // 9B. HELD BOX FLOATING HUD (When carrying a box from the Storage Rack to restock!)
+              if (state.isHoldingBox)
+                Positioned(
+                  bottom: 68,
+                  left: 24,
+                  right: 24,
+                  child: Center(
+                    child: HeldBoxHudBanner(
+                      gameState: state,
+                      hintText: 'Pindutin ang berdeng estante (+1 kada pindot)!',
+                    ),
+                  ),
+                ),
+
+              // 10. BOTTOM ACTION BUTTONS (LEFT: Arrow to Back Room | RIGHT: Close / Open Store)
               Positioned(
                 bottom: 12,
                 left: 16,
                 right: 16,
                 child: Row(
                   children: [
-                    // [ 🟢 SERVE CUSTOMER ] / [ 📦 KUNIN MUNA SA ESTANTE ]
+                    // LEFT BUTTON: Arrow going to the back of the store (Ref & Storage Rack)
                     Expanded(
                       flex: 1,
                       child: PixelButton(
                         label:
-                            _currentCustomer == null
-                                ? '[ 🟢 SERVE CUSTOMER ]'
-                                : _allItemsPicked
-                                    ? '[ 🟢 SERVE CUSTOMER: IBENTA NA! ]'
-                                    : '[ 📦 KUNIN SA ESTANTE ($_totalPickedCount/$_totalRequiredCount) • ⏱️ ${_customerTimeLeft}s ]',
-                        color:
-                            _currentCustomer == null || _allItemsPicked
-                                ? const Color(0xFF43A047)
-                                : const Color(0xFFD68910),
+                            state.totalBodegaBoxCount > 0
+                                ? '[ ⬅️ PUNTA SA LIKOD (📦 ${state.totalBodegaBoxCount}) ]'
+                                : '[ ⬅️ PUNTA SA LIKOD ]',
+                        color: const Color(0xFF2980B9),
                         height: 50,
-                        fontSize: 12,
-                        onPressed: _serveCustomer,
+                        fontSize: 12.5,
+                        onPressed: _goToBackRoom,
                       ),
                     ),
                     const SizedBox(width: 14),
 
-                    // [ 🔴 PLEASE WAIT ]
+                    // RIGHT BUTTON: Close or Open the Store
                     Expanded(
                       flex: 1,
                       child: PixelButton(
                         label:
                             state.storeOpen
-                                ? '[ 🔴 PLEASE WAIT ]'
+                                ? '[ 🔴 ISARA ANG TINDAHAN ]'
                                 : '[ 🟢 BUKSAN ANG TINDAHAN ]',
                         color:
                             state.storeOpen
@@ -1513,7 +1773,7 @@ class _StoreScreenState extends State<StoreScreen>
                                 : const Color(0xFF2E7D32),
                         height: 50,
                         fontSize: 12.5,
-                        onPressed: _pleaseWaitCustomer,
+                        onPressed: _toggleStoreOpenClose,
                       ),
                     ),
                   ],

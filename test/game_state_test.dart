@@ -92,5 +92,71 @@ void main() {
       expect(restored.hasPermit, true);
       expect(restored.getStock('kape'), original.getStock('kape'));
     });
+
+    test('Wholesale box purchase, pickup from rack, and tap-by-tap shelf restocking until full', () {
+      final state = GameState.newGame();
+      expect(state.getStock('kape'), 5); // starts with 5 on shelf
+      expect(state.getBoxStock('kape'), 0);
+
+      // Buy 6 Kape wholesale box from supermarket -> lands on bodega rack, NOT front shelf yet
+      expect(state.buyWholesaleBox('kape', 6), true);
+      expect(state.getStock('kape'), 5);
+      expect(state.getBoxStock('kape'), 6);
+
+      // Pick up Kape box from rack
+      expect(state.pickUpBox('kape'), true);
+      expect(state.isHoldingBox, true);
+      expect(state.heldBoxItemId, 'kape');
+      expect(state.heldBoxQty, 6);
+      expect(state.getBoxStock('kape'), 0);
+
+      // Wrong shelf rejects restock
+      expect(state.restockOneFromHeldBox('shampoo'), RestockResult.wrongShelf);
+
+      // Tap 5 times to fill shelf from 5 -> 10 (maxShelfCapacity)
+      for (int i = 0; i < 5; i++) {
+        expect(state.restockOneFromHeldBox('kape'), RestockResult.restocked);
+      }
+      expect(state.getStock('kape'), GameState.maxShelfCapacity);
+      expect(state.heldBoxQty, 1); // 1 left in box!
+
+      // 6th tap reports shelfFull
+      expect(state.restockOneFromHeldBox('kape'), RestockResult.shelfFull);
+
+      // Put leftover box back down on rack
+      state.putDownHeldBox();
+      expect(state.isHoldingBox, false);
+      expect(state.getBoxStock('kape'), 1);
+    });
+
+    test('Computer online order delivers boxes to Garage and triggers arrival alert', () {
+      final state = GameState.newGame();
+      final initMoney = state.money;
+
+      // Order 4 Kape & 2 Noodles online via computer (instant for unit test)
+      final ordered = state.orderOnlineFromComputer(
+        {'kape': 4, 'noodles': 2},
+        deliveryDelay: Duration.zero,
+      );
+      expect(ordered, true);
+      expect(state.money, initMoney - (4 * 5 + 2 * 8));
+      expect(state.getGarageBoxStock('kape'), 4);
+      expect(state.getGarageBoxStock('noodles'), 2);
+      expect(state.hasNewDeliveryAlert, true);
+      expect(state.deliveryArrivalVersion, 1);
+
+      // Pick up Kape box from Garage floor
+      expect(state.pickUpGarageBox('kape'), true);
+      expect(state.isHoldingBox, true);
+      expect(state.heldBoxItemId, 'kape');
+      expect(state.heldBoxQty, 4);
+      expect(state.getGarageBoxStock('kape'), 0);
+      expect(state.hasNewDeliveryAlert, false);
+
+      // Restock 1 Kape from held box onto front shelf (5 -> 6)
+      expect(state.restockOneFromHeldBox('kape'), RestockResult.restocked);
+      expect(state.getStock('kape'), 6);
+      expect(state.heldBoxQty, 3);
+    });
   });
 }
