@@ -105,7 +105,7 @@ class PixelCustomerSprite extends StatelessWidget {
     this.isSpeaking = true,
     required this.speechText,
     this.width = 200,
-    this.height = 220,
+    this.height = 200,
     required this.onTap,
   });
 
@@ -121,6 +121,7 @@ class PixelCustomerSprite extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.contain,
+        alignment: Alignment.bottomCenter, // Anchor flush to window sill
         filterQuality: FilterQuality.none, // 100% crisp 16-bit pixel clusters
       );
     } else {
@@ -129,6 +130,7 @@ class PixelCustomerSprite extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.contain,
+        alignment: Alignment.bottomCenter,
         filterQuality: FilterQuality.none,
       );
     }
@@ -142,38 +144,89 @@ class PixelCustomerSprite extends StatelessWidget {
           // 1. Genuine 16-Bit Pixel Art Customer Character Sprite
           spriteWidget,
 
-          // 2. Retro Pixel Speech Bubble (Above customer's head)
+          // 2. Retro Pixel Speech Bubble (Optional inline mode)
           if (isSpeaking)
             Positioned(
-              bottom: height - 10,
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.black, width: 2),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black54, offset: Offset(2, 2)),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    PixelText(
-                      speechText,
-                      size: 10,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      hasShadow: false,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+              bottom: height + 4,
+              child: PixelSpeechBubble(
+                text: speechText,
+                onTap: onTap,
               ),
             ),
         ],
       ),
     );
   }
+}
+
+class PixelSpeechBubble extends StatelessWidget {
+  final String text;
+  final VoidCallback? onTap;
+
+  const PixelSpeechBubble({
+    super.key,
+    required this.text,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            constraints: const BoxConstraints(maxWidth: 210),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.black, width: 2.2),
+              boxShadow: const [
+                BoxShadow(color: Colors.black54, offset: Offset(2, 2)),
+              ],
+            ),
+            child: PixelText(
+              text,
+              size: 10.5,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              hasShadow: false,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Small pixel pointer triangle pointing down toward customer
+          CustomPaint(
+            size: const Size(12, 7),
+            painter: _SpeechTailPainter(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpeechTailPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fill = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final stroke = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2;
+
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0);
+
+    canvas.drawPath(path, fill);
+    canvas.drawPath(path, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -24,7 +24,8 @@ class ScamDialog extends StatelessWidget {
     final total = order.totalCost;
 
     // Display values on fake phone
-    final displayedAmount = isScammer ? (total * 0.1) : total; // scammer shows 10% or wrong amount
+    final displayedAmount =
+        isScammer ? (total * 0.1) : total; // scammer shows 10% or wrong amount
     final statusText = isScammer ? 'PROCESSING...' : 'PAYMENT SUCCESSFUL';
     final statusColor = isScammer ? Colors.amber : const Color(0xFF2ECC71);
     final refNumber = isScammer ? 'REF # DRAFT-992341' : 'REF # 9042 1882 3019';
@@ -90,7 +91,7 @@ class ScamDialog extends StatelessWidget {
                       color: Colors.black54,
                       offset: Offset(2, 4),
                       blurRadius: 4,
-                    )
+                    ),
                   ],
                 ),
                 child: Column(
@@ -109,19 +110,40 @@ class ScamDialog extends StatelessWidget {
                     // Phone screen content (GCash blue header)
                     Container(
                       color: const Color(0xFF007DFE), // GCash blue
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const PixelText('G-Pay App', size: 9, color: Colors.white, hasShadow: false),
+                          const PixelText(
+                            'G-Pay App',
+                            size: 9,
+                            color: Colors.white,
+                            hasShadow: false,
+                          ),
                           Row(
                             children: [
                               if (isScammer)
-                                const Icon(Icons.wifi_off, size: 10, color: Colors.white70)
+                                const Icon(
+                                  Icons.wifi_off,
+                                  size: 10,
+                                  color: Colors.white70,
+                                )
                               else
-                                const Icon(Icons.wifi, size: 10, color: Colors.white),
+                                const Icon(
+                                  Icons.wifi,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
                               const SizedBox(width: 4),
-                              const PixelText('100%', size: 8, color: Colors.white, hasShadow: false),
+                              const PixelText(
+                                '100%',
+                                size: 8,
+                                color: Colors.white,
+                                hasShadow: false,
+                              ),
                             ],
                           ),
                         ],
@@ -131,7 +153,10 @@ class ScamDialog extends StatelessWidget {
                     // Screen Body
                     Container(
                       color: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
                       child: Column(
                         children: [
                           // Status Icon
@@ -139,11 +164,13 @@ class ScamDialog extends StatelessWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: statusColor.withAlpha(38),
+                              color: statusColor.withOpacity(0.15),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isScammer ? Icons.hourglass_top : Icons.check_circle,
+                              isScammer
+                                  ? Icons.hourglass_top
+                                  : Icons.check_circle,
                               color: statusColor,
                               size: 26,
                             ),
@@ -182,7 +209,8 @@ class ScamDialog extends StatelessWidget {
                             child: PixelText(
                               refNumber,
                               size: 8,
-                              color: isScammer ? Colors.red : Colors.grey.shade700,
+                              color:
+                                  isScammer ? Colors.red : Colors.grey.shade700,
                               hasShadow: false,
                             ),
                           ),
@@ -190,7 +218,10 @@ class ScamDialog extends StatelessWidget {
                           if (isScammer) ...[
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               color: Colors.amber.shade100,
                               child: const PixelText(
                                 '⚠️ [Hint: Tingnan ang Status & Amount!]',
@@ -205,10 +236,7 @@ class ScamDialog extends StatelessWidget {
                     ),
 
                     // Phone bottom bezel
-                    Container(
-                      height: 14,
-                      color: Colors.black,
-                    ),
+                    Container(height: 14, color: Colors.black),
                   ],
                 ),
               ),
@@ -217,12 +245,19 @@ class ScamDialog extends StatelessWidget {
 
               // Actual Cost Reminder
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 color: const Color(0xFF263238),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const PixelText('Dapat na Halaga (Total):', size: 10, color: Colors.white70),
+                    const PixelText(
+                      'Dapat na Halaga (Total):',
+                      size: 10,
+                      color: Colors.white70,
+                    ),
                     PixelText(
                       '₱${total.toStringAsFixed(0)}',
                       size: 13,

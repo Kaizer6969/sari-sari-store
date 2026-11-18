@@ -28,6 +28,7 @@ class _StoreScreenState extends State<StoreScreen>
   Timer? _inGameClockTimer;
   Timer? _customerSpawnTimer;
   Timer? _initSpawnTimer;
+  Timer? _initTrafficTimer;
   Timer? _trafficTriggerTimer;
   CustomerOrder? _currentCustomer;
   String? _lastPersonaId;
@@ -45,10 +46,10 @@ class _StoreScreenState extends State<StoreScreen>
 
     widget.gameState.storeOpen = true;
 
-    // Vehicle Traffic Animation (moves across window in 5 seconds)
+    // Vehicle Traffic Animation (smooth cruise across the street)
     _vehicleAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 4800),
+      duration: const Duration(milliseconds: 5600),
     );
 
     _vehicleAnimController.addStatusListener((status) {
@@ -63,7 +64,7 @@ class _StoreScreenState extends State<StoreScreen>
 
     _startTimers();
 
-    // Spawn first customer after intro delay
+    // Spawn first customer & first passing vehicle after intro delay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && widget.gameState.storeOpen) {
         _initSpawnTimer = Timer(const Duration(milliseconds: 1500), () {
@@ -73,6 +74,11 @@ class _StoreScreenState extends State<StoreScreen>
             _spawnCustomer();
           }
         });
+        _initTrafficTimer = Timer(const Duration(milliseconds: 2800), () {
+          if (mounted && !_isVehicleActive) {
+            _triggerTraffic();
+          }
+        });
       }
     });
   }
@@ -80,6 +86,7 @@ class _StoreScreenState extends State<StoreScreen>
   @override
   void dispose() {
     _initSpawnTimer?.cancel();
+    _initTrafficTimer?.cancel();
     _inGameClockTimer?.cancel();
     _customerSpawnTimer?.cancel();
     _trafficTriggerTimer?.cancel();
@@ -107,8 +114,8 @@ class _StoreScreenState extends State<StoreScreen>
       }
     });
 
-    // Background road traffic trigger every 11 seconds
-    _trafficTriggerTimer = Timer.periodic(const Duration(seconds: 11), (_) {
+    // Background road traffic trigger every 9 seconds
+    _trafficTriggerTimer = Timer.periodic(const Duration(seconds: 9), (_) {
       if (!mounted) return;
       if (!_isVehicleActive) {
         _triggerTraffic();
@@ -118,9 +125,9 @@ class _StoreScreenState extends State<StoreScreen>
 
   void _triggerTraffic() {
     if (!mounted) return;
+    const allVehicles = VehicleType.values;
     setState(() {
-      _currentVehicleType =
-          _rng.nextBool() ? VehicleType.jeepney : VehicleType.tricycle;
+      _currentVehicleType = allVehicles[_rng.nextInt(allVehicles.length)];
       _vehicleMovingRight = _rng.nextBool();
       _isVehicleActive = true;
     });
@@ -677,11 +684,25 @@ class _StoreScreenState extends State<StoreScreen>
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
 
-          // Window coordinates in 16-bit store art
-          final windowLeft = w * 0.285;
-          final windowTop = h * 0.315;
-          final windowWidth = w * 0.365;
-          final windowHeight = h * 0.405;
+          // Exact open window aperture in own_pixel_store.png (1376x768)
+          // Left shutter inner edge: 480/1376, Right shutter inner edge: 893/1376
+          // Top lintel bottom edge: 278/768, Wooden sill back edge: 553/768
+          final windowLeft = w * 0.349;
+          final windowTop = h * 0.362;
+          final windowWidth = w * 0.300;
+          final windowHeight = h * 0.358;
+
+          // Customer standing outside behind the wooden window sill
+          final activePersona =
+              _currentCustomer?.persona ?? CustomerPersona.allPersonas.first;
+          final isKid = activePersona.type == CustomerType.bongbong;
+          final custH = windowHeight * (isKid ? 0.60 : 0.70);
+          final custW = custH * 1.32;
+          final custCenterX = windowWidth * 0.43;
+          final custLeftInWindow = custCenterX - (custW / 2);
+          final sillTuck = custH * 0.08;
+          final visibleCustH = custH - sillTuck;
+          final custHeadTopY = (windowTop + windowHeight) - visibleCustH;
 
           return Stack(
             fit: StackFit.expand,
@@ -697,7 +718,7 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
               ),
 
-              // 2. OUTSIDE WINDOW SKY / DAY-NIGHT TINT LAYER
+              // 2. OUTSIDE WINDOW APERTURE (Sky Tint + Passing Traffic + Customer Standing Outside Behind Sill)
               Positioned(
                 left: windowLeft,
                 top: windowTop,
@@ -709,7 +730,7 @@ class _StoreScreenState extends State<StoreScreen>
                       // Morning Sunrise Glow (6:00 AM - 7:59 AM)
                       if (hour >= 6 && hour < 8)
                         Positioned.fill(
-                          child: Container(color: const Color(0x35FFB300)),
+                          child: Container(color: const Color(0x28FFB300)),
                         ),
 
                       // Golden Sunset / Afternoon Glow (4:30 PM - 6:30 PM)
@@ -781,42 +802,104 @@ class _StoreScreenState extends State<StoreScreen>
                         ),
                       ],
 
-                      // 3. BACKGROUND ROAD TRAFFIC ANIMATION (Passing Jeepneys and Tricycles)
+                      // 3. BACKGROUND ROAD TRAFFIC ANIMATION (16-Bit Jeepney, Tricycle & Delivery Motor)
+                      // Sized & grounded to match the blue tricycle in own_pixel_store.png (height ~53% of window, tires near bottom sill)
                       if (_isVehicleActive)
                         AnimatedBuilder(
                           animation: _vehicleAnimController,
                           builder: (context, child) {
                             final progress = _vehicleAnimController.value;
-                            // Drive across window road
+
+                            // Match exact scale of the parked blue tricycle (0.531 * windowHeight)
+                            final double vehicleH;
+                            final double roadBottomOffset;
+                            switch (_currentVehicleType) {
+                              case VehicleType.jeepney:
+                                vehicleH = windowHeight * 0.56;
+                                roadBottomOffset = windowHeight * 0.04;
+                                break;
+                              case VehicleType.tricycle:
+                                vehicleH = windowHeight * 0.51;
+                                roadBottomOffset = windowHeight * 0.05;
+                                break;
+                              case VehicleType.motorcycle:
+                                vehicleH = windowHeight * 0.44;
+                                roadBottomOffset = windowHeight * 0.06;
+                                break;
+                            }
+
+                            final wheelFrame = ((progress * 26).toInt()) % 2;
+                            final vehicleWidget = PixelRoadVehicle(
+                              type: _currentVehicleType,
+                              movingRight: _vehicleMovingRight,
+                              height: vehicleH,
+                              frame: wheelFrame,
+                            );
+                            final vehicleW = vehicleWidget.computedWidth;
+
+                            // Smoothly enter from outside one shutter edge and exit past the other
                             final startX =
                                 _vehicleMovingRight
-                                    ? -120.0
-                                    : windowWidth + 20.0;
+                                    ? -vehicleW - 12.0
+                                    : windowWidth + 12.0;
                             final endX =
                                 _vehicleMovingRight
-                                    ? windowWidth + 20.0
-                                    : -120.0;
+                                    ? windowWidth + 12.0
+                                    : -vehicleW - 12.0;
                             final currentX =
                                 startX + (endX - startX) * progress;
-                            final wheelFrame = ((progress * 30).toInt()) % 2;
 
                             return Positioned(
                               left: currentX,
-                              top: windowHeight * 0.52,
-                              child: PixelRoadVehicle(
-                                type: _currentVehicleType,
-                                movingRight: _vehicleMovingRight,
-                                frame: wheelFrame,
-                              ),
+                              bottom: roadBottomOffset,
+                              child: vehicleWidget,
                             );
                           },
                         ),
+
+                      // 4. CUSTOMER STANDING OUTSIDE BEHIND THE WOODEN WINDOW SILL
+                      if (state.storeOpen && _currentCustomer != null) ...[
+                        Positioned(
+                          left: custLeftInWindow,
+                          bottom: -sillTuck,
+                          child: PixelCustomerSprite(
+                            persona: activePersona,
+                            isSpeaking:
+                                false, // Speech bubble rendered cleanly above window clip
+                            speechText: _currentCustomer!.speechLine,
+                            width: custW,
+                            height: custH,
+                            onTap: _serveCustomer,
+                          ),
+                        ),
+                        // Subtle sill contact shadow so customer sits naturally behind the wooden sill
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: 7,
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Color(0x55000000),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
 
-              // 4. OVERALL COZY STORE LIGHTING AT NIGHT
+              // 5. OVERALL COZY STORE LIGHTING AT NIGHT
               if (hour >= 19 || hour < 6)
                 Positioned.fill(
                   child: IgnorePointer(
@@ -832,28 +915,19 @@ class _StoreScreenState extends State<StoreScreen>
                   ),
                 ),
 
-              // 5. CUSTOMER AT WINDOW COUNTER (Standing right behind the counter sill)
-              if (state.storeOpen && _currentCustomer != null) ...[
-                () {
-                  final custW = (w * 0.22).clamp(190.0, 310.0);
-                  final custH = (h * 0.36).clamp(210.0, 350.0);
-                  final custLeft = windowLeft + (windowWidth - custW) / 2;
-                  final custTop = (windowTop + windowHeight) - custH + 8; // Anchor flush to wooden counter sill
-
-                  return Positioned(
-                    left: custLeft,
-                    top: custTop,
-                    child: PixelCustomerSprite(
-                      persona: _currentCustomer!.persona ?? CustomerPersona.allPersonas.first,
-                      isSpeaking: true,
-                      speechText: _currentCustomer!.speechLine,
-                      width: custW,
-                      height: custH,
+              // 6. CUSTOMER SPEECH BUBBLE (Floating cleanly above customer's head)
+              if (state.storeOpen && _currentCustomer != null)
+                Positioned(
+                  left: (windowLeft + custCenterX - 110).clamp(12.0, w - 232.0),
+                  width: 220,
+                  bottom: (h - custHeadTopY + 4).clamp(12.0, h - 80.0),
+                  child: Center(
+                    child: PixelSpeechBubble(
+                      text: _currentCustomer!.speechLine,
                       onTap: _serveCustomer,
                     ),
-                  );
-                }(),
-              ],
+                  ),
+                ),
 
               // 6. TOP UI HUD (MATCHING REFERENCE EXACTLY)
               Positioned(

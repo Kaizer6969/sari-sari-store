@@ -22,6 +22,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/customers/
+    - assets/images/vehicles/
     - assets/images/own_pixel_store.png
     - assets/images/pixel_store_clean.png
     - assets/images/tinay.png
