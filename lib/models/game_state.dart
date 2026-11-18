@@ -179,6 +179,18 @@ class GameState extends ChangeNotifier {
 
   void recordScammerRejected() => rejectedScammer();
 
+  /// Umalis ang customer dahil naubos ang 40-second timer
+  void recordCustomerTimeout() {
+    reputation = (reputation - 5).clamp(0, 100);
+    notifyListeners();
+  }
+
+  /// Matagumpay na naasikaso ang customer bago maubos ang oras
+  void recordCustomerServed() {
+    reputation = (reputation + 1).clamp(0, 100);
+    notifyListeners();
+  }
+
   /// Simulan ang susunod na araw
   void startNewDay() {
     day += 1;

@@ -8,6 +8,7 @@ import '../widgets/pixel_text.dart';
 import '../widgets/pixel_button.dart';
 import '../widgets/pixel_customer_sprite.dart';
 import '../widgets/pixel_road_vehicle.dart';
+import '../widgets/shelf_hotspot.dart';
 import '../widgets/transaction_dialog.dart';
 import '../widgets/scam_dialog.dart';
 import 'map_screen.dart';
@@ -25,13 +26,49 @@ class StoreScreen extends StatefulWidget {
 
 class _StoreScreenState extends State<StoreScreen>
     with SingleTickerProviderStateMixin {
+  static const int _maxCustomerSeconds = 40;
+
   Timer? _inGameClockTimer;
   Timer? _customerSpawnTimer;
   Timer? _initSpawnTimer;
   Timer? _initTrafficTimer;
   Timer? _trafficTriggerTimer;
+  Timer? _customerPatienceTimer;
+  Timer? _pickFeedbackTimer;
   CustomerOrder? _currentCustomer;
   String? _lastPersonaId;
+
+  // Customer shopping list gathering & 40-second patience timer
+  final Map<String, int> _pickedItems = {};
+  int _customerTimeLeft = _maxCustomerSeconds;
+  bool _isPausedForDialog = false;
+  String? _lastPickedItemId;
+  String? _lastWrongItemId;
+
+  int get _totalRequiredCount {
+    final customer = _currentCustomer;
+    if (customer == null) return 0;
+    int sum = 0;
+    for (final qty in customer.items.values) {
+      sum += qty;
+    }
+    return sum;
+  }
+
+  int get _totalPickedCount {
+    final customer = _currentCustomer;
+    if (customer == null) return 0;
+    int sum = 0;
+    customer.items.forEach((itemId, needed) {
+      sum += (_pickedItems[itemId] ?? 0).clamp(0, needed);
+    });
+    return sum;
+  }
+
+  bool get _allItemsPicked =>
+      _currentCustomer != null &&
+      _totalRequiredCount > 0 &&
+      _totalPickedCount >= _totalRequiredCount;
 
   // Background Road Vehicle Animation
   late AnimationController _vehicleAnimController;
@@ -90,6 +127,8 @@ class _StoreScreenState extends State<StoreScreen>
     _inGameClockTimer?.cancel();
     _customerSpawnTimer?.cancel();
     _trafficTriggerTimer?.cancel();
+    _customerPatienceTimer?.cancel();
+    _pickFeedbackTimer?.cancel();
     _vehicleAnimController.dispose();
     super.dispose();
   }
@@ -152,6 +191,137 @@ class _StoreScreenState extends State<StoreScreen>
     }
   }
 
+  void _clearCurrentCustomer() {
+    _customerPatienceTimer?.cancel();
+    _pickFeedbackTimer?.cancel();
+    _currentCustomer = null;
+    _pickedItems.clear();
+    _customerTimeLeft = _maxCustomerSeconds;
+    _lastPickedItemId = null;
+    _lastWrongItemId = null;
+    _isPausedForDialog = false;
+  }
+
+  void _startCustomerPatienceTimer() {
+    _customerPatienceTimer?.cancel();
+    _customerTimeLeft = _maxCustomerSeconds;
+
+    _customerPatienceTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      if (!widget.gameState.storeOpen ||
+          _currentCustomer == null ||
+          _isPausedForDialog) {
+        return;
+      }
+
+      if (_customerTimeLeft <= 1) {
+        _handleCustomerTimeout();
+      } else {
+        setState(() {
+          _customerTimeLeft -= 1;
+        });
+      }
+    });
+  }
+
+  void _handleCustomerTimeout() {
+    final leavingName = _currentCustomer?.customerName ?? 'Customer';
+    widget.gameState.recordCustomerTimeout();
+    SaveManager.saveGame(widget.gameState);
+
+    setState(() {
+      _clearCurrentCustomer();
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFC0392B),
+        duration: const Duration(milliseconds: 2200),
+        content: PixelText(
+          '😤 Umalis si $leavingName! Naubos ang 40 segundo! (-5 Reputasyon)',
+          size: 10.5,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _onShelfItemTapped(String itemId) {
+    if (!widget.gameState.storeOpen || _currentCustomer == null) return;
+    if (_allItemsPicked) {
+      _serveCustomer();
+      return;
+    }
+
+    final item = GameConstants.itemById(itemId);
+    if (item == null) return;
+
+    final customer = _currentCustomer!;
+    final needed = customer.items[itemId] ?? 0;
+    final picked = _pickedItems[itemId] ?? 0;
+
+    _pickFeedbackTimer?.cancel();
+
+    if (needed > 0 && picked < needed) {
+      setState(() {
+        _pickedItems[itemId] = picked + 1;
+        _lastPickedItemId = itemId;
+        _lastWrongItemId = null;
+      });
+
+      _pickFeedbackTimer = Timer(const Duration(milliseconds: 450), () {
+        if (mounted) {
+          setState(() {
+            _lastPickedItemId = null;
+          });
+        }
+      });
+
+      if (_allItemsPicked) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF27AE60),
+            duration: const Duration(milliseconds: 1600),
+            content: PixelText(
+              '✅ Kumpleto na ang order ni ${customer.customerName}! Pindutin ang SERVE CUSTOMER!',
+              size: 10.5,
+              color: Colors.white,
+            ),
+          ),
+        );
+      }
+    } else {
+      setState(() {
+        _lastWrongItemId = itemId;
+        _lastPickedItemId = null;
+      });
+
+      _pickFeedbackTimer = Timer(const Duration(milliseconds: 450), () {
+        if (mounted) {
+          setState(() {
+            _lastWrongItemId = null;
+          });
+        }
+      });
+
+      final msg =
+          needed > 0
+              ? 'Kumpleto na ang ${item.name} sa listahan!'
+              : 'Hindi kasama ang ${item.name} sa listahan ni ${customer.customerName}!';
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFD35400),
+          duration: const Duration(milliseconds: 1100),
+          content: PixelText(msg, size: 10, color: Colors.white),
+        ),
+      );
+    }
+  }
+
   void _spawnCustomer() {
     final inStockItems =
         widget.gameState.inventory.entries
@@ -169,18 +339,46 @@ class _StoreScreenState extends State<StoreScreen>
     final persona = availablePersonas[_rng.nextInt(availablePersonas.length)];
     _lastPersonaId = persona.id;
 
-    final targetItem = persona.defaultItem;
-    final itemId =
-        inStockItems.contains(targetItem)
-            ? targetItem
-            : inStockItems[_rng.nextInt(inStockItems.length)];
+    // Build a multi-item shopping list (2 to 3 distinct items, or fewer if stock is low)
+    final desiredKinds =
+        inStockItems.length >= 3
+            ? (2 + _rng.nextInt(2)) // 2 or 3 distinct items
+            : inStockItems.length;
 
-    final currentStock = widget.gameState.getStock(itemId);
-    final item = GameConstants.itemById(itemId);
-    if (item == null || currentStock <= 0) return;
+    final chosenIds = <String>[];
+    if (inStockItems.contains(persona.defaultItem)) {
+      chosenIds.add(persona.defaultItem);
+    }
 
-    final buyQty = (1 + _rng.nextInt(2)).clamp(1, currentStock);
-    final totalBill = item.retailPrice * buyQty;
+    final remainingPool =
+        inStockItems.where((id) => !chosenIds.contains(id)).toList()
+          ..shuffle(_rng);
+    for (final id in remainingPool) {
+      if (chosenIds.length >= desiredKinds) break;
+      chosenIds.add(id);
+    }
+
+    final orderItems = <String, int>{};
+    double totalBill = 0.0;
+    final itemLabels = <String>[];
+
+    for (final itemId in chosenIds) {
+      final currentStock = widget.gameState.getStock(itemId);
+      final item = GameConstants.itemById(itemId);
+      if (item == null || currentStock <= 0) continue;
+
+      // Allow qty 1-2 for small/cheap items, qty 1 for bulky items
+      final isSmallItem =
+          itemId == 'candy' || itemId == 'kape' || itemId == 'itlog';
+      final qty =
+          (isSmallItem && currentStock >= 2 && _rng.nextBool()) ? 2 : 1;
+
+      orderItems[itemId] = qty;
+      totalBill += item.retailPrice * qty;
+      itemLabels.add(item.name.split(' ').first);
+    }
+
+    if (orderItems.isEmpty) return;
 
     final isNight = widget.gameState.hour >= 19 || widget.gameState.hour < 6;
     final isScammer =
@@ -195,17 +393,30 @@ class _StoreScreenState extends State<StoreScreen>
       paymentGiven = valid.isNotEmpty ? valid.first.toDouble() : totalBill;
     }
 
-    String speech = persona.greeting;
-    if (isGCash && !isScammer) {
-      speech = 'Ate, bayad po ako sa GCash para bawas barya! 📱';
+    final listPreview =
+        itemLabels.length == 1
+            ? itemLabels.first
+            : '${itemLabels.sublist(0, itemLabels.length - 1).join(', ')} at ${itemLabels.last}';
+
+    final String speech;
+    if (isScammer) {
+      speech = 'Pabili ng $listPreview — naka-GCash na! 📱';
+    } else if (isGCash) {
+      speech = 'Pabili pong $listPreview! GCash bayad 📱';
+    } else {
+      speech = 'Pabili po ng $listPreview! 📝';
     }
 
     setState(() {
+      _pickedItems.clear();
+      _lastPickedItemId = null;
+      _lastWrongItemId = null;
+      _isPausedForDialog = false;
       _currentCustomer = CustomerOrder(
         persona: persona,
         customerName: persona.name,
         customerAvatar: _personaAvatar(persona.type),
-        items: {itemId: buyQty},
+        items: orderItems,
         totalCost: totalBill,
         paymentGiven: paymentGiven,
         isGCash: isGCash,
@@ -213,6 +424,8 @@ class _StoreScreenState extends State<StoreScreen>
         speechLine: speech,
       );
     });
+
+    _startCustomerPatienceTimer();
   }
 
   String _personaAvatar(CustomerType type) {
@@ -254,7 +467,28 @@ class _StoreScreenState extends State<StoreScreen>
       return;
     }
 
+    // Must gather ALL items from the store shelves before selling!
+    if (!_allItemsPicked) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFD35400),
+          duration: const Duration(milliseconds: 1500),
+          content: PixelText(
+            '📦 Kunin muna lahat ng paninda sa estante! ($_totalPickedCount/$_totalRequiredCount pa lang)',
+            size: 10.5,
+            color: Colors.white,
+          ),
+        ),
+      );
+      return;
+    }
+
     final customer = _currentCustomer!;
+    setState(() {
+      _isPausedForDialog = true;
+    });
+
     if (customer.isGCash) {
       showDialog(
         context: context,
@@ -284,7 +518,14 @@ class _StoreScreenState extends State<StoreScreen>
                 Navigator.pop(ctx);
                 _completeCashSale(customer);
               },
-              onCancel: () => Navigator.pop(ctx),
+              onCancel: () {
+                Navigator.pop(ctx);
+                if (mounted) {
+                  setState(() {
+                    _isPausedForDialog = false;
+                  });
+                }
+              },
             ),
       );
     }
@@ -294,11 +535,12 @@ class _StoreScreenState extends State<StoreScreen>
     customer.items.forEach((itemId, qty) {
       widget.gameState.sellItem(itemId, qty);
     });
+    widget.gameState.recordCustomerServed();
     widget.gameState.advanceTime(5);
     SaveManager.saveGame(widget.gameState);
 
     setState(() {
-      _currentCustomer = null;
+      _clearCurrentCustomer();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -324,7 +566,7 @@ class _StoreScreenState extends State<StoreScreen>
       SaveManager.saveGame(widget.gameState);
 
       setState(() {
-        _currentCustomer = null;
+        _clearCurrentCustomer();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -342,11 +584,12 @@ class _StoreScreenState extends State<StoreScreen>
       customer.items.forEach((itemId, qty) {
         widget.gameState.sellItem(itemId, qty);
       });
+      widget.gameState.recordCustomerServed();
       widget.gameState.advanceTime(5);
       SaveManager.saveGame(widget.gameState);
 
       setState(() {
-        _currentCustomer = null;
+        _clearCurrentCustomer();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -370,7 +613,7 @@ class _StoreScreenState extends State<StoreScreen>
       SaveManager.saveGame(widget.gameState);
 
       setState(() {
-        _currentCustomer = null;
+        _clearCurrentCustomer();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -388,7 +631,7 @@ class _StoreScreenState extends State<StoreScreen>
       SaveManager.saveGame(widget.gameState);
 
       setState(() {
-        _currentCustomer = null;
+        _clearCurrentCustomer();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -412,7 +655,7 @@ class _StoreScreenState extends State<StoreScreen>
           backgroundColor: const Color(0xFFD35400),
           duration: const Duration(milliseconds: 1200),
           content: PixelText(
-            'Sandali lang! Pinaghintay muna si ${_currentCustomer!.customerName}.',
+            'Sandali lang! May $_customerTimeLeft segundo ka pa para kay ${_currentCustomer!.customerName}!',
             size: 10,
             color: Colors.white,
           ),
@@ -423,7 +666,7 @@ class _StoreScreenState extends State<StoreScreen>
       setState(() {
         widget.gameState.toggleStore();
         if (!widget.gameState.storeOpen) {
-          _currentCustomer = null;
+          _clearCurrentCustomer();
         }
       });
       SaveManager.saveGame(widget.gameState);
@@ -431,6 +674,9 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   void _openPauseMenu() {
+    setState(() {
+      _isPausedForDialog = true;
+    });
     showDialog(
       context: context,
       builder:
@@ -466,7 +712,7 @@ class _StoreScreenState extends State<StoreScreen>
                     setState(() {
                       widget.gameState.toggleStore();
                       if (!widget.gameState.storeOpen) {
-                        _currentCustomer = null;
+                        _clearCurrentCustomer();
                       }
                     });
                     SaveManager.saveGame(widget.gameState);
@@ -482,12 +728,15 @@ class _StoreScreenState extends State<StoreScreen>
                   color: const Color(0xFF2980B9),
                   onPressed: () {
                     Navigator.pop(ctx);
+                    setState(() => _isPausedForDialog = true);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => MapScreen(gameState: widget.gameState),
                       ),
-                    ).then((_) => setState(() {}));
+                    ).then((_) {
+                      if (mounted) setState(() => _isPausedForDialog = false);
+                    });
                   },
                 ),
                 const SizedBox(height: 10),
@@ -501,13 +750,16 @@ class _StoreScreenState extends State<StoreScreen>
                   color: const Color(0xFFD35400),
                   onPressed: () {
                     Navigator.pop(ctx);
+                    setState(() => _isPausedForDialog = true);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
                             (_) => InventoryScreen(gameState: widget.gameState),
                       ),
-                    ).then((_) => setState(() {}));
+                    ).then((_) {
+                      if (mounted) setState(() => _isPausedForDialog = false);
+                    });
                   },
                 ),
                 const SizedBox(height: 10),
@@ -521,7 +773,7 @@ class _StoreScreenState extends State<StoreScreen>
                   onPressed: () {
                     Navigator.pop(ctx);
                     setState(() {
-                      _currentCustomer = null;
+                      _clearCurrentCustomer();
                       widget.gameState.startNewDay();
                     });
                     SaveManager.saveGame(widget.gameState);
@@ -546,7 +798,13 @@ class _StoreScreenState extends State<StoreScreen>
               ],
             ),
           ),
-    );
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          _isPausedForDialog = false;
+        });
+      }
+    });
   }
 
   String _currentEncounterText() {
@@ -915,7 +1173,82 @@ class _StoreScreenState extends State<StoreScreen>
                   ),
                 ),
 
-              // 6. CUSTOMER SPEECH BUBBLE (Floating cleanly above customer's head)
+              // 6. INTERACTIVE SHELF & COUNTER HOTSPOTS (Player grabs customer's list items!)
+              if (state.storeOpen &&
+                  _currentCustomer != null &&
+                  !_allItemsPicked) ...[
+                for (final zone in ShelfHotspotZone.allZones)
+                  if (state.getStock(zone.itemId) > 0)
+                    () {
+                      final item = GameConstants.itemById(zone.itemId);
+                      if (item == null) return const SizedBox.shrink();
+                      final needed = _currentCustomer!.items[zone.itemId] ?? 0;
+                      final picked = _pickedItems[zone.itemId] ?? 0;
+                      final stillNeedsThis = needed > 0 && picked < needed;
+                      // Gentle golden hint during the final 12 seconds if player is still searching
+                      final showUrgentHint =
+                          stillNeedsThis && _customerTimeLeft <= 12;
+
+                      return Positioned(
+                        left: w * zone.leftFrac,
+                        top: h * zone.topFrac,
+                        width: w * zone.widthFrac,
+                        height: h * zone.heightFrac,
+                        child: ShelfHotspotButton(
+                          item: item,
+                          stock: state.getStock(zone.itemId),
+                          showUrgentHint: showUrgentHint,
+                          justPicked: _lastPickedItemId == zone.itemId,
+                          justWrong: _lastWrongItemId == zone.itemId,
+                          onTap: () => _onShelfItemTapped(zone.itemId),
+                        ),
+                      );
+                    }(),
+              ],
+
+              // 6B. PACKED ORDER BAG ON COUNTER (Once all items are gathered, ready to sell!)
+              if (state.storeOpen &&
+                  _currentCustomer != null &&
+                  _allItemsPicked)
+                Positioned(
+                  left: w * 0.405,
+                  top: h * 0.77,
+                  child: GestureDetector(
+                    onTap: _serveCustomer,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xF027AE60),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black87,
+                            offset: Offset(2, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🛍️', style: TextStyle(fontSize: 16)),
+                          SizedBox(width: 5),
+                          PixelText(
+                            'HANDA NA! IBENTA ▶',
+                            size: 9.5,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 6C. CUSTOMER SPEECH BUBBLE (Floating cleanly above customer's head)
               if (state.storeOpen && _currentCustomer != null)
                 Positioned(
                   left: (windowLeft + custCenterX - 110).clamp(12.0, w - 232.0),
@@ -923,9 +1256,28 @@ class _StoreScreenState extends State<StoreScreen>
                   bottom: (h - custHeadTopY + 4).clamp(12.0, h - 80.0),
                   child: Center(
                     child: PixelSpeechBubble(
-                      text: _currentCustomer!.speechLine,
+                      text:
+                          _allItemsPicked
+                              ? 'Salamat! Magkano po lahat? 💵'
+                              : _currentCustomer!.speechLine,
                       onTap: _serveCustomer,
                     ),
+                  ),
+                ),
+
+              // 6D. CUSTOMER ORDER CHECKLIST + 40s PATIENCE TIMER CARD (Left side over rehas)
+              if (state.storeOpen && _currentCustomer != null)
+                Positioned(
+                  left: 12,
+                  top: 94,
+                  child: CustomerOrderChecklistCard(
+                    customerName: _currentCustomer!.customerName,
+                    requiredItems: _currentCustomer!.items,
+                    pickedItems: _pickedItems,
+                    secondsLeft: _customerTimeLeft,
+                    maxSeconds: _maxCustomerSeconds,
+                    allPicked: _allItemsPicked,
+                    onServeTap: _serveCustomer,
                   ),
                 ),
 
@@ -1019,24 +1371,34 @@ class _StoreScreenState extends State<StoreScreen>
                       label: '🗺️ MAPA',
                       color: const Color(0xFF2980B9),
                       onTap: () {
+                        setState(() => _isPausedForDialog = true);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => MapScreen(gameState: state),
                           ),
-                        ).then((_) => setState(() {}));
+                        ).then((_) {
+                          if (mounted) {
+                            setState(() => _isPausedForDialog = false);
+                          }
+                        });
                       },
                     ),
                     _buildShelfPill(
                       label: '📦 PANINDA (${state.totalStockItems})',
                       color: const Color(0xFFE67E22),
                       onTap: () {
+                        setState(() => _isPausedForDialog = true);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => InventoryScreen(gameState: state),
                           ),
-                        ).then((_) => setState(() {}));
+                        ).then((_) {
+                          if (mounted) {
+                            setState(() => _isPausedForDialog = false);
+                          }
+                        });
                       },
                     ),
                     _buildShelfPill(
@@ -1044,7 +1406,7 @@ class _StoreScreenState extends State<StoreScreen>
                       color: const Color(0xFF8E44AD),
                       onTap: () {
                         setState(() {
-                          _currentCustomer = null;
+                          _clearCurrentCustomer();
                           state.startNewDay();
                         });
                         SaveManager.saveGame(state);
@@ -1116,17 +1478,22 @@ class _StoreScreenState extends State<StoreScreen>
                 right: 16,
                 child: Row(
                   children: [
-                    // [ 🟢 SERVE CUSTOMER ]
+                    // [ 🟢 SERVE CUSTOMER ] / [ 📦 KUNIN MUNA SA ESTANTE ]
                     Expanded(
                       flex: 1,
                       child: PixelButton(
                         label:
-                            _currentCustomer != null
-                                ? '[ 🟢 SERVE CUSTOMER: ${_currentCustomer!.customerName.toUpperCase()} ]'
-                                : '[ 🟢 SERVE CUSTOMER ]',
-                        color: const Color(0xFF43A047),
+                            _currentCustomer == null
+                                ? '[ 🟢 SERVE CUSTOMER ]'
+                                : _allItemsPicked
+                                    ? '[ 🟢 SERVE CUSTOMER: IBENTA NA! ]'
+                                    : '[ 📦 KUNIN SA ESTANTE ($_totalPickedCount/$_totalRequiredCount) • ⏱️ ${_customerTimeLeft}s ]',
+                        color:
+                            _currentCustomer == null || _allItemsPicked
+                                ? const Color(0xFF43A047)
+                                : const Color(0xFFD68910),
                         height: 50,
-                        fontSize: 12.5,
+                        fontSize: 12,
                         onPressed: _serveCustomer,
                       ),
                     ),
