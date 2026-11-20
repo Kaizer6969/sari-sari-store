@@ -375,9 +375,9 @@ class _TransactionDialogState extends State<TransactionDialog>
                 // 4. CENTER-BOTTOM: Open Cash Drawer (Kaha) - 1:1 Pixel Art
                 Positioned(
                   bottom: 6,
-                  left: 280,
-                  width: 355,
-                  height: 330,
+                  left: 245,
+                  width: 410,
+                  height: 275,
                   child: _buildCashDrawer(),
                 ),
 
@@ -406,12 +406,12 @@ class _TransactionDialogState extends State<TransactionDialog>
                             final progress = flight.curved.value;
                             // Convert relative counter coordinate to dialog coordinate
                             // Counter area starts at (200, 200) roughly
-                            final curX = 275 +
+                            final curX = 245 +
                                 flight.start.dx +
                                 (flight.end.dx - flight.start.dx) * progress;
                             // Arc slightly upwards mid-flight
                             final arc = -math.sin(progress * math.pi) * 45;
-                            final curY = 200 +
+                            final curY = 240 +
                                 flight.start.dy +
                                 (flight.end.dy - flight.start.dy) * progress +
                                 arc;
@@ -979,7 +979,7 @@ class _TransactionDialogState extends State<TransactionDialog>
   // ==========================================
   Widget _buildCashDrawer() {
     return AspectRatio(
-      aspectRatio: 737 / 686,
+      aspectRatio: 697 / 465,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final w = constraints.maxWidth;
@@ -988,7 +988,7 @@ class _TransactionDialogState extends State<TransactionDialog>
           return Stack(
             fit: StackFit.expand,
             children: [
-              // 1. EXACT 1:1 PIXEL ART CASH DRAWER (In-Memory Base64: 100% reliable, zero network 404!)
+              // 1. EXACT 1:1 PIXEL ART CASH DRAWER (Clean crop, 0% background, 100% reliable)
               Image.memory(
                 DrawerImageData.bytes,
                 width: w,
@@ -997,7 +997,7 @@ class _TransactionDialogState extends State<TransactionDialog>
                 filterQuality: FilterQuality.none, // Crisp 16-bit pixel art
                 errorBuilder: (context, error, stackTrace) {
                   return Image.asset(
-                    'assets/images/kaha_drawer.jpg',
+                    'assets/images/kaha_drawer.png',
                     width: w,
                     height: h,
                     fit: BoxFit.fill,
@@ -1011,65 +1011,65 @@ class _TransactionDialogState extends State<TransactionDialog>
               // 2. Bill Compartment Tap Targets (Overlaying the exact slots in the image)
               // Slot 1: ₱20 (Orange)
               Positioned(
-                left: w * 0.118,
-                top: h * 0.255,
-                width: w * 0.198,
-                height: h * 0.357,
+                left: w * 0.055,
+                top: h * 0.02,
+                width: w * 0.205,
+                height: h * 0.50,
                 child: _buildDrawerSlotHitbox(20, isCoin: false, label: '₱20'),
               ),
 
               // Slot 2: ₱50 (Red)
               Positioned(
-                left: w * 0.325,
-                top: h * 0.255,
-                width: w * 0.195,
-                height: h * 0.357,
+                left: w * 0.265,
+                top: h * 0.02,
+                width: w * 0.200,
+                height: h * 0.50,
                 child: _buildDrawerSlotHitbox(50, isCoin: false, label: '₱50'),
               ),
 
               // Slot 3: ₱100 (Purple)
               Positioned(
-                left: w * 0.526,
-                top: h * 0.255,
-                width: w * 0.183,
-                height: h * 0.357,
+                left: w * 0.470,
+                top: h * 0.02,
+                width: w * 0.200,
+                height: h * 0.50,
                 child: _buildDrawerSlotHitbox(100, isCoin: false, label: '₱100'),
               ),
 
               // Slot 4: ₱1000 (Blue) / ₱500
               Positioned(
-                left: w * 0.715,
-                top: h * 0.255,
-                width: w * 0.190,
-                height: h * 0.357,
+                left: w * 0.672,
+                top: h * 0.02,
+                width: w * 0.200,
+                height: h * 0.50,
                 child: _buildDrawerSlotHitbox(1000, isCoin: false, label: '₱1000'),
               ),
 
               // 3. Coin Well Tap Targets (Overlaying the exact coin wells in the image)
               // Well 1: ₱1 Silver
               Positioned(
-                left: w * 0.118,
-                top: h * 0.618,
-                width: w * 0.254,
-                height: h * 0.200,
+                left: w * 0.055,
+                top: h * 0.53,
+                width: w * 0.300,
+                height: h * 0.27,
                 child: _buildDrawerSlotHitbox(1, isCoin: true, label: '₱1'),
               ),
 
               // Well 2: ₱5 Silver
               Positioned(
-                left: w * 0.378,
-                top: h * 0.618,
-                width: w * 0.262,
-                height: h * 0.200,
+                left: w * 0.365,
+                top: h * 0.53,
+                width: w * 0.300,
+                height: h * 0.27,
                 child: _buildDrawerSlotHitbox(5, isCoin: true, label: '₱5'),
               ),
 
               // Well 3: ₱10 Gold
               Positioned(
-                left: w * 0.646,
-                top: h * 0.618,
-                width: w * 0.260,
-                height: h * 0.200,
+                left: w * 0.670,
+                top: h * 0.53,
+                width: w * 0.275,
+                height: h * 0.27,
                 child: _buildDrawerSlotHitbox(10, isCoin: true, label: '₱10'),
               ),
             ],
