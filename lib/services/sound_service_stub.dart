@@ -18,3 +18,9 @@ void speakCustomerTextImpl(
 }) {
   // No-op in headless VM tests
 }
+
+void playCoinSoundImpl() {}
+void playBillSoundImpl() {}
+void playRegisterKaChingImpl() {}
+void playErrorBuzzImpl() {}
+

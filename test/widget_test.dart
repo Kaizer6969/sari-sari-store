@@ -5,6 +5,7 @@ import 'package:sari_sari_store/models/game_state.dart';
 import 'package:sari_sari_store/screens/title_screen.dart';
 import 'package:sari_sari_store/screens/store_screen.dart';
 import 'package:sari_sari_store/widgets/shelf_hotspot.dart';
+import 'package:sari_sari_store/widgets/transaction_dialog.dart';
 
 void main() {
   testWidgets('App loads TitleScreen with interactive menu tap targets', (
@@ -95,6 +96,71 @@ void main() {
 
       // Back in Harap view
       expect(find.text('LUMINGON SA LIKOD'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'TransactionDialog: Renders cash drawer, handles animated bill tap and exact change',
+    (WidgetTester tester) async {
+      double completedChange = -1;
+
+      final order = CustomerOrder(
+        customerName: 'Ken',
+        customerAvatar: '👦',
+        items: {'tubig': 1, 'bigas': 1},
+        totalCost: 55.0,
+        paymentGiven: 100.0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TransactionDialog(
+              order: order,
+              onCompleteSale: (changeGiven) {
+                completedChange = changeGiven;
+              },
+              onCancel: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Verify retro register LCD text shows TOTAL, PAID, CHANGE
+      expect(find.text('TOTAL:'), findsOneWidget);
+      expect(find.text('₱55.00'), findsOneWidget);
+      expect(find.text('PAID:'), findsOneWidget);
+      expect(find.text('₱100.00'), findsWidgets);
+      expect(find.text('CHANGE:'), findsOneWidget);
+      expect(find.text('₱45.00'), findsOneWidget);
+
+      // Verify drawer bill and coin trays exist
+      expect(find.text('₱20'), findsWidgets);
+      expect(find.text('₱5'), findsWidgets);
+      expect(find.text('GIVE'), findsOneWidget);
+
+      // Tap ₱20 bill twice, then ₱5 coin once to make ₱45 exact change
+      // Tap ₱20 in drawer
+      await tester.tap(find.byKey(const ValueKey('bill_20')));
+      await tester.pump(const Duration(milliseconds: 350));
+
+      await tester.tap(find.byKey(const ValueKey('bill_20')));
+      await tester.pump(const Duration(milliseconds: 350));
+
+      // Tap ₱5 in drawer
+      await tester.tap(find.byKey(const ValueKey('coin_5')));
+      await tester.pump(const Duration(milliseconds: 350));
+
+      // Given should now be ₱45.00
+      expect(find.text('₱45.00'), findsWidgets);
+      expect(find.text('> TAMA NA! IABOT MO NA ✨'), findsOneWidget);
+
+      // Tap GIVE CHANGE
+      await tester.tap(find.text('GIVE'));
+      await tester.pump(const Duration(milliseconds: 850));
+
+      expect(completedChange, 45.0);
     },
   );
 }

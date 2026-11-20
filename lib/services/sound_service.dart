@@ -35,4 +35,24 @@ class SoundService {
       clipType: clipType,
     );
   }
+
+  /// Plays metallic coin clink when taking or giving coins
+  static void playCoinSound() {
+    impl.playCoinSoundImpl();
+  }
+
+  /// Plays paper bill rustle / slide sound
+  static void playBillSound() {
+    impl.playBillSoundImpl();
+  }
+
+  /// Plays classic retro cash register bell "Ka-ching!"
+  static void playRegisterKaChing() {
+    impl.playRegisterKaChingImpl();
+  }
+
+  /// Plays short error buzzer for wrong change
+  static void playErrorBuzz() {
+    impl.playErrorBuzzImpl();
+  }
 }
