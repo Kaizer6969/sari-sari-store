@@ -1461,8 +1461,8 @@ class _StoreScreenState extends State<StoreScreen>
                   _currentCustomer != null &&
                   _allItemsPicked)
                 Positioned(
-                  left: w * 0.405,
-                  top: h * 0.77,
+                  left: w * 0.380,
+                  top: h * 0.67,
                   child: GestureDetector(
                     onTap: _serveCustomer,
                     child: Container(

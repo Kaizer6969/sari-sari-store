@@ -88,7 +88,7 @@ class ShelfHotspotZone {
     // ── Polished Dark Wooden Counter (counter floor at y = 0.868) ───────
     ShelfHotspotZone(
       itemId: 'candy',
-      leftFrac: 0.155,
+      leftFrac: 0.440,
       topFrac: 0.725,
       widthFrac: 0.145,
       heightFrac: 0.148,
@@ -99,7 +99,7 @@ class ShelfHotspotZone {
     ),
     ShelfHotspotZone(
       itemId: 'itlog',
-      leftFrac: 0.315,
+      leftFrac: 0.295,
       topFrac: 0.775,
       widthFrac: 0.125,
       heightFrac: 0.095,
@@ -110,9 +110,9 @@ class ShelfHotspotZone {
     ),
     ShelfHotspotZone(
       itemId: 'yosi',
-      leftFrac: 0.525,
+      leftFrac: 0.590,
       topFrac: 0.775,
-      widthFrac: 0.105,
+      widthFrac: 0.060,
       heightFrac: 0.095,
       displayStyle: ShelfDisplayStyle.counterRow,
       maxVisible: 5,
