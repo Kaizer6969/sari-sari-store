@@ -2,15 +2,49 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'voice_pack_service_web.dart' as voicePack;
 
+JSObject? _audioCtx;
+
+JSObject? _getOrCreateAudioContext() {
+  try {
+    final existing = globalContext.getProperty('__gameAudioCtx'.toJS);
+    if (existing != null && !existing.isUndefinedOrNull) {
+      _audioCtx = existing as JSObject;
+    }
+
+    if (_audioCtx == null) {
+      final audioCtxCtor =
+          globalContext.getProperty('AudioContext'.toJS) ??
+          globalContext.getProperty('webkitAudioContext'.toJS);
+      if (audioCtxCtor != null && !audioCtxCtor.isUndefinedOrNull) {
+        _audioCtx = (audioCtxCtor as JSFunction).callAsConstructor<JSObject>();
+        globalContext.setProperty('__gameAudioCtx'.toJS, _audioCtx);
+      }
+    }
+
+    if (_audioCtx != null) {
+      final state =
+          (_audioCtx!.getProperty('state'.toJS) as JSString?)?.toDart;
+      if (state == 'suspended') {
+        _audioCtx!.callMethod('resume'.toJS);
+      }
+    }
+    return _audioCtx;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Unlocks the Web Audio context upon the first user interaction (critical for iOS Safari)
+void unlockAudioImpl() {
+  _getOrCreateAudioContext();
+}
+
 /// Web Audio API synthesizer for an authentic dual-tone delivery truck air horn ("HONK! HOOOONK!")
 void playTruckHornImpl() {
   try {
-    final audioCtxCtor =
-        globalContext.getProperty('AudioContext'.toJS) ??
-        globalContext.getProperty('webkitAudioContext'.toJS);
-    if (audioCtxCtor == null || audioCtxCtor.isUndefinedOrNull) return;
+    final ctx = _getOrCreateAudioContext();
+    if (ctx == null) return;
 
-    final ctx = (audioCtxCtor as JSFunction).callAsConstructor<JSObject>();
     final now = (ctx.getProperty('currentTime'.toJS) as JSNumber).toDartDouble;
     final destination = ctx.getProperty('destination'.toJS)!;
 
@@ -18,7 +52,7 @@ void playTruckHornImpl() {
     _playHornBlast(ctx, destination, startTime: now + 0.02, duration: 0.28);
     _playHornBlast(ctx, destination, startTime: now + 0.42, duration: 0.55);
   } catch (_) {
-    // Ignore audio context errors (e.g. autoplay policy before first click)
+    // Ignore audio context errors
   }
 }
 
@@ -71,7 +105,6 @@ void _playHornBlast(
 
 /// Customer dialogue audio: plays user's recorded voice if available,
 /// otherwise plays procedural retro game vocal chatter blips.
-/// Web Speech TTS removed — users record their own voices via Voice Studio.
 void speakCustomerTextImpl(
   String text, {
   double pitch = 1.0,
@@ -92,18 +125,14 @@ void speakCustomerTextImpl(
   }
 }
 
-
 void _playVocalChatterBlips({
   required double pitch,
   required String text,
 }) {
   try {
-    final audioCtxCtor =
-        globalContext.getProperty('AudioContext'.toJS) ??
-        globalContext.getProperty('webkitAudioContext'.toJS);
-    if (audioCtxCtor == null || audioCtxCtor.isUndefinedOrNull) return;
+    final ctx = _getOrCreateAudioContext();
+    if (ctx == null) return;
 
-    final ctx = (audioCtxCtor as JSFunction).callAsConstructor<JSObject>();
     final now = (ctx.getProperty('currentTime'.toJS) as JSNumber).toDartDouble;
     final destination = ctx.getProperty('destination'.toJS)!;
 

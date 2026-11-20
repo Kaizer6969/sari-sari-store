@@ -1,4 +1,9 @@
 /// Non-web / test fallback (no-op so unit & widget tests pass cleanly)
+
+void unlockAudioImpl() {
+  // No-op in headless VM tests
+}
+
 void playTruckHornImpl() {
   // No-op in headless VM tests
 }

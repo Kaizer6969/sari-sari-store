@@ -55,7 +55,11 @@ void _play(String dataUrl) {
     final ctor = globalContext.getProperty('Audio'.toJS);
     if (ctor == null || ctor.isUndefinedOrNull) return;
     final audio = (ctor as JSFunction).callAsConstructor<JSObject>(dataUrl.toJS);
-    audio.callMethod<JSAny?>('play'.toJS);
+    audio.setProperty('preload'.toJS, 'auto'.toJS);
+    final playPromise = audio.callMethod<JSAny?>('play'.toJS);
+    if (playPromise != null && !playPromise.isUndefinedOrNull) {
+      (playPromise as JSPromise).toDart.catchError((_) => null);
+    }
   } catch (_) {}
 }
 

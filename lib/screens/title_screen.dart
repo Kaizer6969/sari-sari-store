@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/game_state.dart';
 import '../services/save_manager.dart';
+import '../services/sound_service.dart';
 import '../widgets/pixel_text.dart';
 import '../widgets/pixel_button.dart';
 import '../widgets/upgrades_dialog.dart';
@@ -216,6 +217,7 @@ class _TitleScreenState extends State<TitleScreen> with SingleTickerProviderStat
         builder: (context, constraints) {
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
+          final safePadding = MediaQuery.of(context).padding;
 
           return Stack(
             fit: StackFit.expand,
@@ -298,8 +300,8 @@ class _TitleScreenState extends State<TitleScreen> with SingleTickerProviderStat
 
               // 4. Subtle Fullscreen Toggle Icon at top-left
               Positioned(
-                top: 12,
-                left: 12,
+                top: 12 + safePadding.top,
+                left: 12 + safePadding.left,
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -353,7 +355,10 @@ class _MenuTapTargetState extends State<_MenuTapTarget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => setState(() => _isDown = true),
+      onTapDown: (_) {
+        SoundService.unlockAudio();
+        setState(() => _isDown = true);
+      },
       onTapUp: (_) {
         setState(() => _isDown = false);
         widget.onTap();

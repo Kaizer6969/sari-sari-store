@@ -6,6 +6,11 @@ import 'sound_service_stub.dart'
 class SoundService {
   SoundService._();
 
+  /// Unlocks audio playback on user interaction (especially on iOS / mobile Safari)
+  static void unlockAudio() {
+    impl.unlockAudioImpl();
+  }
+
   /// Plays a realistic dual-tone delivery truck air horn ("HONK! HOOOONK!")
   static void playTruckHorn() {
     impl.playTruckHornImpl();

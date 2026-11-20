@@ -291,6 +291,7 @@ class _GarageScreenState extends State<GarageScreen> {
         builder: (context, constraints) {
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
+          final safePadding = MediaQuery.of(context).padding;
 
           return Stack(
             fit: StackFit.expand,
@@ -401,9 +402,9 @@ class _GarageScreenState extends State<GarageScreen> {
 
               // 4. TOP HUD BAR
               Positioned(
-                top: 10,
-                left: 14,
-                right: 14,
+                top: 10 + safePadding.top,
+                left: 14 + safePadding.left,
+                right: 14 + safePadding.right,
                 child: Row(
                   children: [
                     _buildTopBadge(
@@ -451,9 +452,9 @@ class _GarageScreenState extends State<GarageScreen> {
 
               // 6. BOTTOM ACTION BAR
               Positioned(
-                bottom: 12,
-                left: 16,
-                right: 16,
+                bottom: 12 + safePadding.bottom,
+                left: 16 + safePadding.left,
+                right: 16 + safePadding.right,
                 child: Row(
                   children: [
                     Expanded(

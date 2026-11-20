@@ -1337,6 +1337,7 @@ class _StoreScreenState extends State<StoreScreen>
         builder: (context, constraints) {
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
+          final safePadding = MediaQuery.of(context).padding;
 
           // Exact open window aperture in own_pixel_store.png (1376x768)
           // Left shutter inner edge: 480/1376, Right shutter inner edge: 893/1376
@@ -1769,8 +1770,8 @@ class _StoreScreenState extends State<StoreScreen>
 
               // 5D. INTERACTIVE FLOOR TURN-AROUND ARROW (Where yellow arrow was drawn!)
               Positioned(
-                left: w * 0.14,
-                bottom: 68,
+                left: w * 0.14 + safePadding.left,
+                bottom: 68 + safePadding.bottom,
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
@@ -1963,8 +1964,8 @@ class _StoreScreenState extends State<StoreScreen>
               // 6D. CUSTOMER ORDER CHECKLIST + 40s PATIENCE TIMER CARD (Left side over rehas)
               if (state.storeOpen && _currentCustomer != null)
                 Positioned(
-                  left: 12,
-                  top: 94,
+                  left: 12 + safePadding.left,
+                  top: 94 + safePadding.top,
                   child: CustomerOrderChecklistCard(
                     customerName: _currentCustomer!.customerName,
                     requiredItems: _currentCustomer!.items,
@@ -1978,9 +1979,9 @@ class _StoreScreenState extends State<StoreScreen>
 
               // 6. TOP UI HUD (MATCHING REFERENCE EXACTLY)
               Positioned(
-                top: 10,
-                left: 14,
-                right: 14,
+                top: 10 + safePadding.top,
+                left: 14 + safePadding.left,
+                right: 14 + safePadding.right,
                 child: Row(
                   children: [
                     // [ DAY 1 / ARAW 1 ]
@@ -2169,9 +2170,9 @@ class _StoreScreenState extends State<StoreScreen>
               // 9B. HELD BOX FLOATING HUD (When carrying a box from the Storage Rack to restock!)
               if (state.isHoldingBox)
                 Positioned(
-                  bottom: 68,
-                  left: 24,
-                  right: 24,
+                  bottom: 68 + safePadding.bottom,
+                  left: 24 + safePadding.left,
+                  right: 24 + safePadding.right,
                   child: Center(
                     child: HeldBoxHudBanner(
                       gameState: state,
@@ -2183,9 +2184,9 @@ class _StoreScreenState extends State<StoreScreen>
 
               // 10. BOTTOM ACTION BUTTONS (LEFT: Turn Around Toggle | RIGHT: Open/Close or Bodega)
               Positioned(
-                bottom: 12,
-                left: 16,
-                right: 16,
+                bottom: 12 + safePadding.bottom,
+                left: 16 + safePadding.left,
+                right: 16 + safePadding.right,
                 child: Row(
                   children: [
                     // LEFT BUTTON: View toggle (Harap sa Bintana / Lumingon sa Likod)

@@ -247,6 +247,7 @@ class _BackRoomScreenState extends State<BackRoomScreen> {
         builder: (context, constraints) {
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
+          final safePadding = MediaQuery.of(context).padding;
 
           // Glass door interior bounds in back_room_ref_bg.jpg (1376x768)
           final refLeft = w * 0.236;
@@ -469,9 +470,9 @@ class _BackRoomScreenState extends State<BackRoomScreen> {
 
               // 4. TOP HUD BAR
               Positioned(
-                top: 10,
-                left: 14,
-                right: 14,
+                top: 10 + safePadding.top,
+                left: 14 + safePadding.left,
+                right: 14 + safePadding.right,
                 child: Row(
                   children: [
                     _buildTopBadge(
@@ -502,9 +503,9 @@ class _BackRoomScreenState extends State<BackRoomScreen> {
               // 5. HELD BOX HUD BANNER (if carrying a box!)
               if (state.isHoldingBox)
                 Positioned(
-                  top: 48,
-                  left: 60,
-                  right: 60,
+                  top: 48 + safePadding.top,
+                  left: 60 + safePadding.left,
+                  right: 60 + safePadding.right,
                   child: Center(
                     child: HeldBoxHudBanner(
                       gameState: state,
@@ -518,8 +519,8 @@ class _BackRoomScreenState extends State<BackRoomScreen> {
 
               // 6. TOP-RIGHT QUICK PILLS (Supermarket, Mapa, Tulog)
               Positioned(
-                top: 50,
-                right: 14,
+                top: 50 + safePadding.top,
+                right: 14 + safePadding.right,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -573,9 +574,9 @@ class _BackRoomScreenState extends State<BackRoomScreen> {
 
               // 7. BOTTOM NAVIGATION BAR: LEFT (Back to Front Store) | RIGHT (Arrow ➡️ to Storage Rack!)
               Positioned(
-                bottom: 12,
-                left: 16,
-                right: 16,
+                bottom: 12 + safePadding.bottom,
+                left: 16 + safePadding.left,
+                right: 16 + safePadding.right,
                 child: Row(
                   children: [
                     Expanded(
