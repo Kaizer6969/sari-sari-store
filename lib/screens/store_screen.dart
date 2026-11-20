@@ -258,7 +258,13 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   void _handleCustomerTimeout() {
-    final leavingName = _currentCustomer?.customerName ?? 'Customer';
+    if (_currentCustomer == null) return;
+    final customer = _currentCustomer!;
+    final leavingName = customer.customerName;
+    final timeoutLine = _customerTimeoutLine(customer.persona?.type);
+
+    _speakCustomerTimeout(customer);
+
     widget.gameState.recordCustomerTimeout();
     SaveManager.saveGame(widget.gameState);
 
@@ -270,9 +276,9 @@ class _StoreScreenState extends State<StoreScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: const Color(0xFFC0392B),
-        duration: const Duration(milliseconds: 2200),
+        duration: const Duration(milliseconds: 2500),
         content: PixelText(
-          '😤 Umalis si $leavingName! Naubos ang 40 segundo! (-5 Reputasyon)',
+          '😤 $leavingName: "$timeoutLine" (-5 Reputasyon)',
           size: 10.5,
           color: Colors.white,
         ),
@@ -614,6 +620,48 @@ class _StoreScreenState extends State<StoreScreen>
       rate: rate,
       personaId: customer.persona?.id,
       clipType: customText != null ? 'pay' : 'greet',
+    );
+  }
+
+  String _customerTimeoutLine(CustomerType? type) {
+    switch (type) {
+      case CustomerType.itStudent:
+        return "Ang tagal naman, male-late na 'ko sa klase!";
+      case CustomerType.tropaMark:
+        return "Grabe ang tagal 'tol, sa kabila na lang ako bibili!";
+      case CustomerType.californiaGuy:
+        return "Ang bagal naman, gutom na 'ko! Aalis na 'ko!";
+      case CustomerType.bongbong:
+        return "Ang tagal-tagal naman, ayoko na!";
+      case CustomerType.tinay:
+        return "Ate ang tagal, aalis na po ako!";
+      case CustomerType.customerGirl:
+        return "Ang tagal naman po, sa kabila na lang ako bibili!";
+      case CustomerType.mangBoy:
+        return "Aba'y kay tagal naman, may pasada pa ako!";
+      case CustomerType.totoyTambay:
+        return "Tsong ang bagal, sa ibang tindahan na lang!";
+      case CustomerType.regularGuy:
+        return "Kay bagal naman magbenta, aalis na ako!";
+      case CustomerType.lolaConching:
+        return "Aba'y kay tagal, masakit na tuhod ko kakahintay...";
+      case CustomerType.scammer:
+        return "Tsk, ang tagal mo mag-check, aalis na 'ko!";
+      default:
+        return "Ang tagal naman, aalis na lang ako!";
+    }
+  }
+
+  void _speakCustomerTimeout(CustomerOrder customer) {
+    final text = _customerTimeoutLine(customer.persona?.type);
+    final pitch = _customerVoicePitch(customer.persona?.type);
+    final rate = _customerVoiceRate(customer.persona?.type);
+    SoundService.speakCustomerText(
+      text,
+      pitch: pitch,
+      rate: rate,
+      personaId: customer.persona?.id,
+      clipType: 'leave',
     );
   }
 

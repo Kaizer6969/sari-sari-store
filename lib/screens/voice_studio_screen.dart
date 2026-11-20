@@ -22,68 +22,69 @@ class _PersonaData {
 
 const _greet = _ClipData('greet', '🗣️ Pagbati', 'Pabili po!');
 const _pay = _ClipData('pay', '💵 Bayad', 'Magkano po lahat?');
+const _leave = _ClipData('leave', '😤 Umalis', 'Ang tagal, aalis na ako!');
 const _gcash = _ClipData('gcash', '📱 GCash', 'GCash na po!');
 
 const _allPersonas = [
   _PersonaData(
     'bongbong', '👦', 'Bongbong',
     'Batang lalaki — mataas na boses',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'tinay', '👧', 'Tinay',
     'Batang babae — mataas na boses',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'customerGirl', '👩', 'Dalaga',
     'Babae — malumanay na boses',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'mangBoy', '🧔', 'Mang Boy',
     'Tricycle driver — mababang boses',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'totoyTambay', '🧑', 'Totoy Tambay',
     'Tambay sa kanto',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'regularGuy', '👷', 'Kargador',
     'Normal na boses ng lalaki',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'scammer', '🕶️', 'Scammer',
     'Manloloko — mabilis magsalita',
-    [_greet, _pay, _gcash],
+    [_greet, _pay, _gcash, _leave],
   ),
   _PersonaData(
     'lolaConching', '👵', 'Lola Conching',
     'Matanda — mabagal magsalita',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'alingNena', '🧕', 'Aling Nena',
     'Nanay / Tita',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'earl', '💻', 'Earl (IT Student)',
     'IT Student (Light Blue Polo) — pampagising sa coding',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'andrie', '😎', 'Andrie (Tropa)',
     'Tropa (Dark Grey Crewneck) — masiglang boses',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
   _PersonaData(
     'jake', '🧢', 'Jake (California)',
     'California Shirt — merienda noodles at tubig',
-    [_greet, _pay],
+    [_greet, _pay, _leave],
   ),
 ];
 
