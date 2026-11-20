@@ -407,7 +407,13 @@ class _StoreScreenState extends State<StoreScreen>
       });
 
       if (_allItemsPicked) {
-        _speakCustomer(customer, customText: 'Salamat! Magkano po lahat?');
+        _speakCustomer(
+          customer,
+          customText:
+              customer.isGCash
+                  ? 'Naka GCash na po ako!'
+                  : 'Salamat! Magkano po lahat?',
+        );
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -736,7 +742,6 @@ class _StoreScreenState extends State<StoreScreen>
     });
 
     if (customer.isGCash) {
-      _speakCustomer(customer, customText: 'Naka GCash na po ako!');
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -755,7 +760,6 @@ class _StoreScreenState extends State<StoreScreen>
             ),
       );
     } else {
-      _speakCustomer(customer, customText: 'Magkano po lahat?');
       showDialog(
         context: context,
         barrierDismissible: false,
