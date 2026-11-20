@@ -50,7 +50,8 @@ class _StoreScreenState extends State<StoreScreen>
   final Map<String, int> _pickedItems = {};
   int _customerTimeLeft = _maxCustomerSeconds;
   bool _isPausedForDialog = false;
-  bool _isFacingBack = false; // 2-View: false = Front Window & Customer, true = Back Shelves & Inventory
+  bool _isFacingBack =
+      false; // 2-View: false = Front Window & Customer, true = Back Shelves & Inventory
   String? _lastPickedItemId;
   String? _lastRestockedItemId;
   String? _lastWrongItemId;
@@ -508,8 +509,7 @@ class _StoreScreenState extends State<StoreScreen>
       // Allow qty 1-2 for small/cheap items, qty 1 for bulky items
       final isSmallItem =
           itemId == 'candy' || itemId == 'kape' || itemId == 'itlog';
-      final qty =
-          (isSmallItem && currentStock >= 2 && _rng.nextBool()) ? 2 : 1;
+      final qty = (isSmallItem && currentStock >= 2 && _rng.nextBool()) ? 2 : 1;
 
       orderItems[itemId] = qty;
       totalBill += item.retailPrice * qty;
@@ -974,12 +974,13 @@ class _StoreScreenState extends State<StoreScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => RaketDialog(
-        gameState: state,
-        onJobCompleted: () {
-          if (mounted) setState(() {});
-        },
-      ),
+      builder:
+          (_) => RaketDialog(
+            gameState: state,
+            onJobCompleted: () {
+              if (mounted) setState(() {});
+            },
+          ),
     ).then((_) {
       if (mounted) setState(() => _isPausedForDialog = false);
     });
@@ -1362,34 +1363,40 @@ class _StoreScreenState extends State<StoreScreen>
             children: [
               // 1. 16-BIT PIXEL ART SARI-SARI STORE (Harap: Bintana & Window | Likod: Estante ng Paninda)
               Positioned.fill(
-                child: _isFacingBack
-                    ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          PixelBackStoreShelves(width: w, height: h),
-                          Image.memory(
-                            StoreBackImageData.bytes,
-                            gaplessPlayback: true,
-                            width: w,
-                            height: h,
-                            fit: BoxFit.fill,
-                            filterQuality: FilterQuality.none, // Sharp retro pixels
-                            errorBuilder: (context, error, stackTrace) {
-                              return PixelBackStoreShelves(width: w, height: h);
-                            },
-                          ),
-                        ],
-                      )
-                    : Image.memory(
-                        state.storeOpen
-                            ? ItemImageData.emptyStoreBgBytes
-                            : ItemImageData.closedStoreBgBytes,
-                        gaplessPlayback: true,
-                        width: w,
-                        height: h,
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.none, // Crisp sharp pixel blocks
-                      ),
+                child:
+                    _isFacingBack
+                        ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            PixelBackStoreShelves(width: w, height: h),
+                            Image.memory(
+                              StoreBackImageData.bytes,
+                              gaplessPlayback: true,
+                              width: w,
+                              height: h,
+                              fit: BoxFit.fill,
+                              filterQuality:
+                                  FilterQuality.none, // Sharp retro pixels
+                              errorBuilder: (context, error, stackTrace) {
+                                return PixelBackStoreShelves(
+                                  width: w,
+                                  height: h,
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                        : Image.memory(
+                          state.storeOpen
+                              ? ItemImageData.emptyStoreBgBytes
+                              : ItemImageData.closedStoreBgBytes,
+                          gaplessPlayback: true,
+                          width: w,
+                          height: h,
+                          fit: BoxFit.fill,
+                          filterQuality:
+                              FilterQuality.none, // Crisp sharp pixel blocks
+                        ),
               ),
 
               // 2. OUTSIDE WINDOW APERTURE (Only visible when facing FRONT and window shutters are OPEN!)
@@ -1399,187 +1406,194 @@ class _StoreScreenState extends State<StoreScreen>
                   top: windowTop,
                   width: windowWidth,
                   height: windowHeight,
-                child: ClipRect(
-                  child: Stack(
-                    children: [
-                      // Morning Sunrise Glow (6:00 AM - 7:59 AM)
-                      if (hour >= 6 && hour < 8)
-                        Positioned.fill(
-                          child: Container(color: const Color(0x28FFB300)),
-                        ),
-
-                      // Golden Sunset / Afternoon Glow (4:30 PM - 6:30 PM)
-                      if (hour >= 16 && hour < 18)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Color(0x65E65100), Color(0x40FF8F00)],
-                              ),
-                            ),
+                  child: ClipRect(
+                    child: Stack(
+                      children: [
+                        // Morning Sunrise Glow (6:00 AM - 7:59 AM)
+                        if (hour >= 6 && hour < 8)
+                          Positioned.fill(
+                            child: Container(color: const Color(0x28FFB300)),
                           ),
-                        ),
 
-                      // Twilight / Dusk (6:30 PM - 7:30 PM)
-                      if (hour >= 18 && hour < 19)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Color(0x751A237E), Color(0x554A148C)],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      // Dark Night Sky with Twinkling Pixel Stars (7:30 PM - 5:30 AM)
-                      if (hour >= 19 || hour < 6) ...[
-                        Positioned.fill(
-                          child: Container(color: const Color(0xB0050A1A)),
-                        ),
-                        // Twinkling Pixel Stars in night sky
-                        Positioned(
-                          left: windowWidth * 0.15,
-                          top: windowHeight * 0.12,
-                          child: const Text(
-                            '✨',
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: Colors.amberAccent,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: windowWidth * 0.45,
-                          top: windowHeight * 0.08,
-                          child: const Text(
-                            '⭐',
-                            style: TextStyle(
-                              fontSize: 8,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: windowWidth * 0.75,
-                          top: windowHeight * 0.15,
-                          child: const Text(
-                            '✨',
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: Colors.amberAccent,
-                            ),
-                          ),
-                        ),
-                      ],
-
-                      // 3. BACKGROUND ROAD TRAFFIC ANIMATION (16-Bit Jeepney, Tricycle & Delivery Motor)
-                      // Sized & grounded to match the blue tricycle in own_pixel_store.png (height ~53% of window, tires near bottom sill)
-                      if (_isVehicleActive)
-                        AnimatedBuilder(
-                          animation: _vehicleAnimController,
-                          builder: (context, child) {
-                            final progress = _vehicleAnimController.value;
-
-                            // Match exact scale of the parked blue tricycle (0.531 * windowHeight)
-                            final double vehicleH;
-                            final double roadBottomOffset;
-                            switch (_currentVehicleType) {
-                              case VehicleType.jeepney:
-                                vehicleH = windowHeight * 0.56;
-                                roadBottomOffset = windowHeight * 0.04;
-                                break;
-                              case VehicleType.tricycle:
-                                vehicleH = windowHeight * 0.51;
-                                roadBottomOffset = windowHeight * 0.05;
-                                break;
-                              case VehicleType.motorcycle:
-                                vehicleH = windowHeight * 0.44;
-                                roadBottomOffset = windowHeight * 0.06;
-                                break;
-                            }
-
-                            final wheelFrame = ((progress * 26).toInt()) % 2;
-                            final vehicleWidget = PixelRoadVehicle(
-                              type: _currentVehicleType,
-                              movingRight: _vehicleMovingRight,
-                              height: vehicleH,
-                              frame: wheelFrame,
-                            );
-                            final vehicleW = vehicleWidget.computedWidth;
-
-                            // Smoothly enter from outside one shutter edge and exit past the other
-                            final startX =
-                                _vehicleMovingRight
-                                    ? -vehicleW - 12.0
-                                    : windowWidth + 12.0;
-                            final endX =
-                                _vehicleMovingRight
-                                    ? windowWidth + 12.0
-                                    : -vehicleW - 12.0;
-                            final currentX =
-                                startX + (endX - startX) * progress;
-
-                            return Positioned(
-                              left: currentX,
-                              bottom: roadBottomOffset,
-                              child: vehicleWidget,
-                            );
-                          },
-                        ),
-
-                      // 4. CUSTOMER STANDING OUTSIDE BEHIND THE WOODEN WINDOW SILL
-                      if (state.storeOpen && _currentCustomer != null) ...[
-                        Positioned(
-                          left: custLeftInWindow,
-                          bottom: -sillTuck,
-                          child: PixelCustomerSprite(
-                            persona: activePersona,
-                            isSpeaking:
-                                false, // Speech bubble rendered cleanly above window clip
-                            speechText: _currentCustomer!.speechLine,
-                            width: custW,
-                            height: custH,
-                            onTap: _serveCustomer,
-                          ),
-                        ),
-                        // Subtle sill contact shadow so customer sits naturally behind the wooden sill
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          height: 7,
-                          child: IgnorePointer(
+                        // Golden Sunset / Afternoon Glow (4:30 PM - 6:30 PM)
+                        if (hour >= 16 && hour < 18)
+                          Positioned.fill(
                             child: Container(
                               decoration: const BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    Colors.transparent,
-                                    Color(0x55000000),
+                                    Color(0x65E65100),
+                                    Color(0x40FF8F00),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                        ),
+
+                        // Twilight / Dusk (6:30 PM - 7:30 PM)
+                        if (hour >= 18 && hour < 19)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0x751A237E),
+                                    Color(0x554A148C),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        // Dark Night Sky with Twinkling Pixel Stars (7:30 PM - 5:30 AM)
+                        if (hour >= 19 || hour < 6) ...[
+                          Positioned.fill(
+                            child: Container(color: const Color(0xB0050A1A)),
+                          ),
+                          // Twinkling Pixel Stars in night sky
+                          Positioned(
+                            left: windowWidth * 0.15,
+                            top: windowHeight * 0.12,
+                            child: const Text(
+                              '✨',
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.amberAccent,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: windowWidth * 0.45,
+                            top: windowHeight * 0.08,
+                            child: const Text(
+                              '⭐',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: windowWidth * 0.75,
+                            top: windowHeight * 0.15,
+                            child: const Text(
+                              '✨',
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.amberAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // 3. BACKGROUND ROAD TRAFFIC ANIMATION (16-Bit Jeepney, Tricycle & Delivery Motor)
+                        // Sized & grounded to match the blue tricycle in own_pixel_store.png (height ~53% of window, tires near bottom sill)
+                        if (_isVehicleActive)
+                          AnimatedBuilder(
+                            animation: _vehicleAnimController,
+                            builder: (context, child) {
+                              final progress = _vehicleAnimController.value;
+
+                              // Match exact scale of the parked blue tricycle (0.531 * windowHeight)
+                              final double vehicleH;
+                              final double roadBottomOffset;
+                              switch (_currentVehicleType) {
+                                case VehicleType.jeepney:
+                                  vehicleH = windowHeight * 0.56;
+                                  roadBottomOffset = windowHeight * 0.04;
+                                  break;
+                                case VehicleType.tricycle:
+                                  vehicleH = windowHeight * 0.51;
+                                  roadBottomOffset = windowHeight * 0.05;
+                                  break;
+                                case VehicleType.motorcycle:
+                                  vehicleH = windowHeight * 0.44;
+                                  roadBottomOffset = windowHeight * 0.06;
+                                  break;
+                              }
+
+                              final wheelFrame = ((progress * 26).toInt()) % 2;
+                              final vehicleWidget = PixelRoadVehicle(
+                                type: _currentVehicleType,
+                                movingRight: _vehicleMovingRight,
+                                height: vehicleH,
+                                frame: wheelFrame,
+                              );
+                              final vehicleW = vehicleWidget.computedWidth;
+
+                              // Smoothly enter from outside one shutter edge and exit past the other
+                              final startX =
+                                  _vehicleMovingRight
+                                      ? -vehicleW - 12.0
+                                      : windowWidth + 12.0;
+                              final endX =
+                                  _vehicleMovingRight
+                                      ? windowWidth + 12.0
+                                      : -vehicleW - 12.0;
+                              final currentX =
+                                  startX + (endX - startX) * progress;
+
+                              return Positioned(
+                                left: currentX,
+                                bottom: roadBottomOffset,
+                                child: vehicleWidget,
+                              );
+                            },
+                          ),
+
+                        // 4. CUSTOMER STANDING OUTSIDE BEHIND THE WOODEN WINDOW SILL
+                        if (state.storeOpen && _currentCustomer != null) ...[
+                          Positioned(
+                            left: custLeftInWindow,
+                            bottom: -sillTuck,
+                            child: PixelCustomerSprite(
+                              persona: activePersona,
+                              isSpeaking:
+                                  false, // Speech bubble rendered cleanly above window clip
+                              speechText: _currentCustomer!.speechLine,
+                              width: custW,
+                              height: custH,
+                              onTap: _serveCustomer,
+                            ),
+                          ),
+                          // Subtle sill contact shadow so customer sits naturally behind the wooden sill
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            height: 7,
+                            child: IgnorePointer(
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Color(0x55000000),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
 
               // 5. DYNAMIC LIVE INVENTORY ON SHELVES, HANGING ROD & COUNTER
               // In Harap View: All goods including hanging sachets (Kape, Shampoo, Sabon, Chichirya) + Shelves + Counter!
               // In Likod View: All 12 items on back wall wooden estante & hanging rail!
-              for (final zone in (_isFacingBack
-                  ? ShelfHotspotZone.backViewZones
-                  : ShelfHotspotZone.allZones))
+              for (final zone
+                  in (_isFacingBack
+                      ? ShelfHotspotZone.backViewZones
+                      : ShelfHotspotZone.allZones))
                 () {
                   final item = GameConstants.itemById(zone.itemId);
                   if (item == null) return const SizedBox.shrink();
@@ -1623,79 +1637,79 @@ class _StoreScreenState extends State<StoreScreen>
               // 5A. CLICKABLE LEFT WOODEN DOOR -> OPENS GARAGE (GARAHE) FOR DELIVERIES! (Only when facing FRONT)
               if (!_isFacingBack)
                 Positioned(
-                left: 0,
-                top: h * 0.12,
-                width: w * 0.135,
-                height: h * 0.80,
-                child: GestureDetector(
-                  onTap: _goToGarage,
-                  behavior: HitTestBehavior.opaque,
-                  child: Align(
-                    alignment: const Alignment(0.0, 0.25),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            (state.hasNewDeliveryAlert ||
-                                    state.totalGarageBoxCount > 0)
-                                ? const Color(0xF5D68910)
-                                : const Color(0xD93E2723),
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
+                  left: 0,
+                  top: h * 0.12,
+                  width: w * 0.135,
+                  height: h * 0.80,
+                  child: GestureDetector(
+                    onTap: _goToGarage,
+                    behavior: HitTestBehavior.opaque,
+                    child: Align(
+                      alignment: const Alignment(0.0, 0.25),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
                           color:
                               (state.hasNewDeliveryAlert ||
                                       state.totalGarageBoxCount > 0)
-                                  ? const Color(0xFFFFF176)
-                                  : const Color(0xFFD7CCC8),
-                          width:
-                              (state.hasNewDeliveryAlert ||
-                                      state.totalGarageBoxCount > 0)
-                                  ? 2.2
-                                  : 1.4,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black87,
-                            offset: Offset(2, 2),
+                                  ? const Color(0xF5D68910)
+                                  : const Color(0xD93E2723),
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color:
+                                (state.hasNewDeliveryAlert ||
+                                        state.totalGarageBoxCount > 0)
+                                    ? const Color(0xFFFFF176)
+                                    : const Color(0xFFD7CCC8),
+                            width:
+                                (state.hasNewDeliveryAlert ||
+                                        state.totalGarageBoxCount > 0)
+                                    ? 2.2
+                                    : 1.4,
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          PixelText(
-                            state.totalGarageBoxCount > 0
-                                ? '🚚 GARAHE'
-                                : '🚪 GARAHE',
-                            size: 9.5,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          if (state.totalGarageBoxCount > 0) ...[
-                            const SizedBox(height: 2),
-                            PixelText(
-                              '📦 ${state.totalGarageBoxCount} Box!',
-                              size: 8.5,
-                              color: const Color(0xFFFFF176),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ] else if (state.hasIncomingDelivery) ...[
-                            const SizedBox(height: 2),
-                            const PixelText(
-                              '🚚 Paparating...',
-                              size: 7.5,
-                              color: Color(0xFFFFE082),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black87,
+                              offset: Offset(2, 2),
                             ),
                           ],
-                        ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PixelText(
+                              state.totalGarageBoxCount > 0
+                                  ? '🚚 GARAHE'
+                                  : '🚪 GARAHE',
+                              size: 9.5,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            if (state.totalGarageBoxCount > 0) ...[
+                              const SizedBox(height: 2),
+                              PixelText(
+                                '📦 ${state.totalGarageBoxCount} Box!',
+                                size: 8.5,
+                                color: const Color(0xFFFFF176),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ] else if (state.hasIncomingDelivery) ...[
+                              const SizedBox(height: 2),
+                              const PixelText(
+                                '🚚 Paparating...',
+                                size: 7.5,
+                                color: Color(0xFFFFE082),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
               // 5C. DOORWAY TO BODEGA / REF (Only when facing BACK)
               if (_isFacingBack)
@@ -1769,16 +1783,18 @@ class _StoreScreenState extends State<StoreScreen>
                       vertical: 7,
                     ),
                     decoration: BoxDecoration(
-                      color: _isFacingBack
-                          ? (_allItemsPicked
-                              ? const Color(0xFF27AE60)
-                              : const Color(0xFF2980B9))
-                          : const Color(0xFFD35400),
+                      color:
+                          _isFacingBack
+                              ? (_allItemsPicked
+                                  ? const Color(0xFF27AE60)
+                                  : const Color(0xFF2980B9))
+                              : const Color(0xFFD35400),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: _isFacingBack && _allItemsPicked
-                            ? const Color(0xFF2ECC71)
-                            : const Color(0xFFFFF176),
+                        color:
+                            _isFacingBack && _allItemsPicked
+                                ? const Color(0xFF2ECC71)
+                                : const Color(0xFFFFF176),
                         width: 2.2,
                       ),
                       boxShadow: const [
@@ -1793,9 +1809,7 @@ class _StoreScreenState extends State<StoreScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _isFacingBack
-                              ? (_allItemsPicked ? '✅' : '⬆️')
-                              : '⬇️',
+                          _isFacingBack ? (_allItemsPicked ? '✅' : '⬆️') : '⬇️',
                           style: const TextStyle(fontSize: 18),
                         ),
                         const SizedBox(width: 6),
@@ -2161,7 +2175,8 @@ class _StoreScreenState extends State<StoreScreen>
                   child: Center(
                     child: HeldBoxHudBanner(
                       gameState: state,
-                      hintText: 'Pindutin ang berdeng estante (+1 kada pindot)!',
+                      hintText:
+                          'Pindutin ang berdeng estante (+1 kada pindot)!',
                     ),
                   ),
                 ),
@@ -2177,16 +2192,18 @@ class _StoreScreenState extends State<StoreScreen>
                     Expanded(
                       flex: 1,
                       child: PixelButton(
-                        label: _isFacingBack
-                            ? (_allItemsPicked
-                                ? '[ ✅ KUMPLETO! HARAP SA BINTANA ⬆️ ]'
-                                : '[ ⬆️ HARAP SA BINTANA (CUSTOMER) ]')
-                            : '[ ⬇️ LUMINGON SA LIKOD (PANINDA 📦) ]',
-                        color: _isFacingBack
-                            ? (_allItemsPicked
-                                ? const Color(0xFF27AE60)
-                                : const Color(0xFF2980B9))
-                            : const Color(0xFFD35400),
+                        label:
+                            _isFacingBack
+                                ? (_allItemsPicked
+                                    ? '[ ✅ KUMPLETO! HARAP SA BINTANA ⬆️ ]'
+                                    : '[ ⬆️ HARAP SA BINTANA (CUSTOMER) ]')
+                                : '[ ⬇️ LUMINGON SA LIKOD (PANINDA 📦) ]',
+                        color:
+                            _isFacingBack
+                                ? (_allItemsPicked
+                                    ? const Color(0xFF27AE60)
+                                    : const Color(0xFF2980B9))
+                                : const Color(0xFFD35400),
                         height: 50,
                         fontSize: 12.0,
                         onPressed: () {
@@ -2201,27 +2218,31 @@ class _StoreScreenState extends State<StoreScreen>
                     // RIGHT BUTTON: Close or Open Store (in Harap) / Bodega & Ref (in Likod)
                     Expanded(
                       flex: 1,
-                      child: _isFacingBack
-                          ? PixelButton(
-                              label: state.totalBodegaBoxCount > 0
-                                  ? '[ 🚪 PUNTA SA BODEGA / REF (📦 ${state.totalBodegaBoxCount}) ]'
-                                  : '[ 🚪 PUNTA SA BODEGA / REF ]',
-                              color: const Color(0xFF34495E),
-                              height: 50,
-                              fontSize: 12.0,
-                              onPressed: _goToBackRoom,
-                            )
-                          : PixelButton(
-                              label: state.storeOpen
-                                  ? '[ 🔴 ISARA ANG TINDAHAN ]'
-                                  : '[ 🟢 BUKSAN ANG TINDAHAN ]',
-                              color: state.storeOpen
-                                  ? const Color(0xFFE53935)
-                                  : const Color(0xFF2E7D32),
-                              height: 50,
-                              fontSize: 12.5,
-                              onPressed: _toggleStoreOpenClose,
-                            ),
+                      child:
+                          _isFacingBack
+                              ? PixelButton(
+                                label:
+                                    state.totalBodegaBoxCount > 0
+                                        ? '[ 🚪 PUNTA SA BODEGA / REF (📦 ${state.totalBodegaBoxCount}) ]'
+                                        : '[ 🚪 PUNTA SA BODEGA / REF ]',
+                                color: const Color(0xFF34495E),
+                                height: 50,
+                                fontSize: 12.0,
+                                onPressed: _goToBackRoom,
+                              )
+                              : PixelButton(
+                                label:
+                                    state.storeOpen
+                                        ? '[ 🔴 ISARA ANG TINDAHAN ]'
+                                        : '[ 🟢 BUKSAN ANG TINDAHAN ]',
+                                color:
+                                    state.storeOpen
+                                        ? const Color(0xFFE53935)
+                                        : const Color(0xFF2E7D32),
+                                height: 50,
+                                fontSize: 12.5,
+                                onPressed: _toggleStoreOpenClose,
+                              ),
                     ),
                   ],
                 ),

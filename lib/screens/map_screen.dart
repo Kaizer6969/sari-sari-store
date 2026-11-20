@@ -17,10 +17,7 @@ class MapScreen extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => RaketDialog(
-        gameState: gameState,
-        onJobCompleted: () {},
-      ),
+      builder: (_) => RaketDialog(gameState: gameState, onJobCompleted: () {}),
     );
   }
 
@@ -40,9 +37,7 @@ class MapScreen extends StatelessWidget {
     SaveManager.saveGame(gameState);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => BarangayScreen(gameState: gameState),
-      ),
+      MaterialPageRoute(builder: (_) => BarangayScreen(gameState: gameState)),
     );
   }
 
@@ -83,11 +78,18 @@ class MapScreen extends StatelessWidget {
             children: [
               // Travel Time Note
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 color: const Color(0xFF111E1B),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time, size: 16, color: Colors.amberAccent),
+                    const Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: Colors.amberAccent,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: PixelText(
@@ -112,9 +114,7 @@ class MapScreen extends StatelessWidget {
                     children: [
                       // Pixel Dirt Roads / Paths
                       Positioned.fill(
-                        child: CustomPaint(
-                          painter: _MapRoadsPainter(),
-                        ),
+                        child: CustomPaint(painter: _MapRoadsPainter()),
                       ),
 
                       // Location 1: SUPERMARKET (Top-Right)
@@ -154,9 +154,13 @@ class MapScreen extends StatelessWidget {
                         child: _mapLocationTile(
                           icon: '🏛️',
                           title: 'BARANGAY HALL',
-                          subtitle: gameState.hasPermit ? 'May Permit Ka Na' : 'Kumuha ng Permit (₱200)',
+                          subtitle:
+                              gameState.hasPermit
+                                  ? 'May Permit Ka Na'
+                                  : 'Kumuha ng Permit (₱200)',
                           badge: '20 mins lakad',
-                          badgeColor: gameState.hasPermit ? Colors.green : Colors.amber,
+                          badgeColor:
+                              gameState.hasPermit ? Colors.green : Colors.amber,
                           color: const Color(0xFF8E44AD),
                           onTap: () => _goToBarangay(context),
                         ),
@@ -251,11 +255,7 @@ class MapScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            PixelText(
-              subtitle,
-              size: 9,
-              color: Colors.white70,
-            ),
+            PixelText(subtitle, size: 9, color: Colors.white70),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -277,22 +277,25 @@ class MapScreen extends StatelessWidget {
 class _MapRoadsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final roadPaint = Paint()
-      ..color = const Color(0xFF8B6F47) // Dirt road brown
-      ..strokeWidth = 22
-      ..style = PaintingStyle.stroke;
+    final roadPaint =
+        Paint()
+          ..color = const Color(0xFF8B6F47) // Dirt road brown
+          ..strokeWidth = 22
+          ..style = PaintingStyle.stroke;
 
-    final roadBorder = Paint()
-      ..color = const Color(0xFF5D4037)
-      ..strokeWidth = 26
-      ..style = PaintingStyle.stroke;
+    final roadBorder =
+        Paint()
+          ..color = const Color(0xFF5D4037)
+          ..strokeWidth = 26
+          ..style = PaintingStyle.stroke;
 
-    final path = Path()
-      ..moveTo(size.width * 0.3, size.height * 0.5) // Store
-      ..lineTo(size.width * 0.55, size.height * 0.45)
-      ..lineTo(size.width * 0.7, size.height * 0.2) // Supermarket
-      ..moveTo(size.width * 0.55, size.height * 0.45)
-      ..lineTo(size.width * 0.65, size.height * 0.8); // Barangay
+    final path =
+        Path()
+          ..moveTo(size.width * 0.3, size.height * 0.5) // Store
+          ..lineTo(size.width * 0.55, size.height * 0.45)
+          ..lineTo(size.width * 0.7, size.height * 0.2) // Supermarket
+          ..moveTo(size.width * 0.55, size.height * 0.45)
+          ..lineTo(size.width * 0.65, size.height * 0.8); // Barangay
 
     canvas.drawPath(path, roadBorder);
     canvas.drawPath(path, roadPaint);

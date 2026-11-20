@@ -40,10 +40,10 @@ class GameConstants {
   // ── Customer spawn rates (customers per in-game hour) ──────────────
   /// Returns expected customers for a given hour (6-23).
   static double customerSpawnRate(int hour) {
-    if (hour >= 6 && hour <= 9) return 5.0;   // high – morning rush
-    if (hour >= 10 && hour <= 14) return 3.0;  // medium – midday
-    if (hour >= 15 && hour <= 18) return 2.5;  // medium-low – afternoon
-    return 1.5;                                 // low – evening
+    if (hour >= 6 && hour <= 9) return 5.0; // high – morning rush
+    if (hour >= 10 && hour <= 14) return 3.0; // medium – midday
+    if (hour >= 15 && hour <= 18) return 2.5; // medium-low – afternoon
+    return 1.5; // low – evening
   }
 
   // ── Store Items ────────────────────────────────────────────────────

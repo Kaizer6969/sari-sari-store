@@ -42,7 +42,10 @@ void main() {
       // Now get permit
       state.obtainPermit();
       expect(state.hasPermit, true);
-      expect(state.money, GameConstants.startingMoney - GameConstants.permitCost);
+      expect(
+        state.money,
+        GameConstants.startingMoney - GameConstants.permitCost,
+      );
 
       // Now can buy Yosi
       final boughtWithPermit = state.buyStock('yosi', 5);
@@ -50,20 +53,23 @@ void main() {
       expect(state.getStock('yosi'), 5);
     });
 
-    test('Scammer mechanics: getting scammed penalizes reputation, rejecting rewards', () {
-      final state = GameState.newGame();
-      final initRep = state.reputation;
+    test(
+      'Scammer mechanics: getting scammed penalizes reputation, rejecting rewards',
+      () {
+        final state = GameState.newGame();
+        final initRep = state.reputation;
 
-      // Got scammed
-      state.gotScammed(100.0);
-      expect(state.scammedCount, 1);
-      expect(state.reputation, initRep - 15);
+        // Got scammed
+        state.gotScammed(100.0);
+        expect(state.scammedCount, 1);
+        expect(state.reputation, initRep - 15);
 
-      // Caught scammer
-      state.rejectedScammer();
-      expect(state.scammersRejected, 1);
-      expect(state.reputation, initRep - 15 + 5);
-    });
+        // Caught scammer
+        state.rejectedScammer();
+        expect(state.scammersRejected, 1);
+        expect(state.reputation, initRep - 15 + 5);
+      },
+    );
 
     test('Time advance wraps minutes and auto-closes store at midnight', () {
       final state = GameState.newGame();
@@ -105,15 +111,18 @@ void main() {
       expect(state.getStock('kape'), 0);
       expect(state.getBoxStock('kape'), 6);
 
-      // Pick up Kape box from rack
-      expect(state.pickUpBox('kape'), true);
-      expect(state.isHoldingBox, true);
-      expect(state.heldBoxItemId, 'kape');
-      expect(state.heldBoxQty, 6);
-      expect(state.getBoxStock('kape'), 0);
+        // Pick up Kape box from rack
+        expect(state.pickUpBox('kape'), true);
+        expect(state.isHoldingBox, true);
+        expect(state.heldBoxItemId, 'kape');
+        expect(state.heldBoxQty, 6);
+        expect(state.getBoxStock('kape'), 0);
 
-      // Wrong shelf rejects restock
-      expect(state.restockOneFromHeldBox('shampoo'), RestockResult.wrongShelf);
+        // Wrong shelf rejects restock
+        expect(
+          state.restockOneFromHeldBox('shampoo'),
+          RestockResult.wrongShelf,
+        );
 
       // Tap 6 times to fill shelf from 0 -> 6 (maxShelfCapacity is 10)
       for (int i = 0; i < 5; i++) {
@@ -126,29 +135,31 @@ void main() {
       expect(state.isHoldingBox, false); // box is now discarded
     });
 
-    test('Computer online order delivers boxes to Garage and triggers arrival alert', () {
-      final state = GameState.newGame();
-      final initMoney = state.money;
+    test(
+      'Computer online order delivers boxes to Garage and triggers arrival alert',
+      () {
+        final state = GameState.newGame();
+        final initMoney = state.money;
 
-      // Order 4 Kape & 2 Noodles online via computer (instant for unit test)
-      final ordered = state.orderOnlineFromComputer(
-        {'kape': 4, 'noodles': 2},
-        deliveryDelay: Duration.zero,
-      );
-      expect(ordered, true);
-      expect(state.money, initMoney - (4 * 5 + 2 * 8));
-      expect(state.getGarageBoxStock('kape'), 4);
-      expect(state.getGarageBoxStock('noodles'), 2);
-      expect(state.hasNewDeliveryAlert, true);
-      expect(state.deliveryArrivalVersion, 1);
+        // Order 4 Kape & 2 Noodles online via computer (instant for unit test)
+        final ordered = state.orderOnlineFromComputer({
+          'kape': 4,
+          'noodles': 2,
+        }, deliveryDelay: Duration.zero);
+        expect(ordered, true);
+        expect(state.money, initMoney - (4 * 5 + 2 * 8));
+        expect(state.getGarageBoxStock('kape'), 4);
+        expect(state.getGarageBoxStock('noodles'), 2);
+        expect(state.hasNewDeliveryAlert, true);
+        expect(state.deliveryArrivalVersion, 1);
 
-      // Pick up Kape box from Garage floor
-      expect(state.pickUpGarageBox('kape'), true);
-      expect(state.isHoldingBox, true);
-      expect(state.heldBoxItemId, 'kape');
-      expect(state.heldBoxQty, 4);
-      expect(state.getGarageBoxStock('kape'), 0);
-      expect(state.hasNewDeliveryAlert, false);
+        // Pick up Kape box from Garage floor
+        expect(state.pickUpGarageBox('kape'), true);
+        expect(state.isHoldingBox, true);
+        expect(state.heldBoxItemId, 'kape');
+        expect(state.heldBoxQty, 4);
+        expect(state.getGarageBoxStock('kape'), 0);
+        expect(state.hasNewDeliveryAlert, false);
 
       // Restock 1 Kape from held box onto front shelf (0 -> 1)
       expect(state.restockOneFromHeldBox('kape'), RestockResult.restocked);

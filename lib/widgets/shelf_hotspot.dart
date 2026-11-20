@@ -275,114 +275,114 @@ class ShelfHotspotZone {
       maxPerRow: 3,
     ),
 
-    // ── Top Wooden Shelf Tier (Plank floor at exact y = 0.530) ─────────
+    // ── Top Wooden Shelf Tier (Plank floor at exact y = 0.528) ─────────
     ShelfHotspotZone(
       itemId: 'bigas',
       leftFrac: 0.355,
-      topFrac: 0.410,
-      widthFrac: 0.105,
-      heightFrac: 0.125,
+      topFrac: 0.415,
+      widthFrac: 0.100,
+      heightFrac: 0.113,
       displayStyle: ShelfDisplayStyle.shelfStacked,
-      maxVisible: 4,
-      maxPerRow: 2,
-      floorLeftFrac: 0.530,
-      floorRightFrac: 0.530,
-      itemHeightFrac: 0.065,
+      maxVisible: 6,
+      maxPerRow: 3,
+      floorLeftFrac: 0.528,
+      floorRightFrac: 0.528,
+      itemHeightFrac: 0.075,
     ),
     ShelfHotspotZone(
       itemId: 'de_lata',
       leftFrac: 0.468,
-      topFrac: 0.410,
+      topFrac: 0.415,
       widthFrac: 0.095,
-      heightFrac: 0.125,
+      heightFrac: 0.113,
       displayStyle: ShelfDisplayStyle.shelfStacked,
       maxVisible: 6,
       maxPerRow: 3,
-      floorLeftFrac: 0.530,
-      floorRightFrac: 0.530,
+      floorLeftFrac: 0.528,
+      floorRightFrac: 0.528,
       itemHeightFrac: 0.052,
     ),
     ShelfHotspotZone(
       itemId: 'noodles',
-      leftFrac: 0.568,
-      topFrac: 0.410,
-      widthFrac: 0.100,
-      heightFrac: 0.125,
+      leftFrac: 0.575,
+      topFrac: 0.415,
+      widthFrac: 0.095,
+      heightFrac: 0.113,
       displayStyle: ShelfDisplayStyle.shelfStacked,
       maxVisible: 6,
       maxPerRow: 3,
-      floorLeftFrac: 0.530,
-      floorRightFrac: 0.530,
+      floorLeftFrac: 0.528,
+      floorRightFrac: 0.528,
       itemHeightFrac: 0.055,
     ),
 
-    // ── Middle Wooden Shelf Tier (Plank floor at exact y = 0.657) ──────
+    // ── Middle Wooden Shelf Tier (Plank floor at exact y = 0.644) ──────
     ShelfHotspotZone(
       itemId: 'tubig',
       leftFrac: 0.355,
-      topFrac: 0.535,
-      widthFrac: 0.105,
-      heightFrac: 0.125,
+      topFrac: 0.538,
+      widthFrac: 0.100,
+      heightFrac: 0.106,
       displayStyle: ShelfDisplayStyle.shelfBottles,
       maxVisible: 4,
       maxPerRow: 4,
-      floorLeftFrac: 0.657,
-      floorRightFrac: 0.657,
+      floorLeftFrac: 0.644,
+      floorRightFrac: 0.644,
       itemHeightFrac: 0.082,
     ),
     ShelfHotspotZone(
       itemId: 'softdrinks',
       leftFrac: 0.468,
-      topFrac: 0.535,
+      topFrac: 0.538,
       widthFrac: 0.095,
-      heightFrac: 0.125,
+      heightFrac: 0.106,
       displayStyle: ShelfDisplayStyle.shelfBottles,
       maxVisible: 5,
       maxPerRow: 5,
-      floorLeftFrac: 0.657,
-      floorRightFrac: 0.657,
-      itemHeightFrac: 0.088,
+      floorLeftFrac: 0.644,
+      floorRightFrac: 0.644,
+      itemHeightFrac: 0.085,
     ),
 
-    // ── Counter Top Table (Counter floor at exact y = 0.821) ───────────
+    // ── Counter Top Table (Counter floor at exact y = 0.816) ───────────
     ShelfHotspotZone(
       itemId: 'candy',
       leftFrac: 0.345,
-      topFrac: 0.730,
+      topFrac: 0.725,
       widthFrac: 0.110,
-      heightFrac: 0.095,
+      heightFrac: 0.091,
       displayStyle: ShelfDisplayStyle.counterRow,
       maxVisible: 5,
       maxPerRow: 3,
-      floorLeftFrac: 0.821,
-      floorRightFrac: 0.821,
-      itemHeightFrac: 0.075,
+      floorLeftFrac: 0.816,
+      floorRightFrac: 0.816,
+      itemHeightFrac: 0.072,
     ),
     ShelfHotspotZone(
       itemId: 'itlog',
-      leftFrac: 0.480,
-      topFrac: 0.765,
-      widthFrac: 0.110,
-      heightFrac: 0.060,
+      leftFrac: 0.475,
+      topFrac: 0.760,
+      widthFrac: 0.105,
+      heightFrac: 0.056,
       displayStyle: ShelfDisplayStyle.counterEggTray,
       maxVisible: 6,
       maxPerRow: 3,
-      floorLeftFrac: 0.821,
-      floorRightFrac: 0.821,
-      itemHeightFrac: 0.045,
+      floorLeftFrac: 0.816,
+      floorRightFrac: 0.816,
+      itemHeightFrac: 0.042,
     ),
     ShelfHotspotZone(
       itemId: 'yosi',
-      leftFrac: 0.620,
-      topFrac: 0.765,
+      leftFrac: 0.600,
+      topFrac: 0.760,
       widthFrac: 0.080,
-      heightFrac: 0.060,
+      heightFrac: 0.056,
       displayStyle: ShelfDisplayStyle.counterRow,
       maxVisible: 5,
       maxPerRow: 3,
-      floorLeftFrac: 0.821,
-      floorRightFrac: 0.821,
-      itemHeightFrac: 0.055,
+      floorLeftFrac: 0.816,
+      floorRightFrac: 0.816,
+      itemHeightFrac: 0.050,
     ),
   ];
 }
@@ -816,12 +816,42 @@ class DynamicShelfStockWidget extends StatelessWidget {
       return widgets;
     }
 
-    // ── B. RIGHT-WALL PERSPECTIVE BOTTLES (Softdrinks, Tubig) ────────────
-    // Bottles ALWAYS stand upright side-by-side following the exact plank slant (never stacked on caps!)
+    // ── B. BOTTLES (Softdrinks, Tubig) ───────────────────────────────────
+    // Bottles ALWAYS stand upright side-by-side (never stacked on caps!)
     if (zone.displayStyle == ShelfDisplayStyle.shelfBottles) {
-      final slots = count < 3 ? 3 : count;
+      final isBackView =
+          (zone.floorLeftFrac - zone.floorRightFrac).abs() < 0.001;
       final baseH = screenHeight * zone.itemHeightFrac;
 
+      if (isBackView) {
+        // Flat orthogonal back view: bottles stand squarely side-by-side on Plank 2
+        // Fit cleanly within the bay without overlapping vertical divider posts!
+        final bottleW = ((zw / count) * 0.86).clamp(8.0, baseH * 0.44);
+        final itemH = baseH;
+        final floorY = _localFloorY(0.5);
+
+        for (int i = 0; i < count; i++) {
+          final centerX = (i + 0.5) * (zw / count);
+          widgets.add(
+            Positioned(
+              left: centerX - bottleW / 2,
+              top: floorY - itemH,
+              width: bottleW,
+              height: itemH,
+              child: Image.memory(
+                bytes,
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomCenter,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+          );
+        }
+        return widgets;
+      }
+
+      // Slanted 1-point perspective for front-view right-wall shelf:
+      final slots = count < 3 ? 3 : count;
       for (int i = 0; i < count; i++) {
         // Normalized horizontal position along the shelf plank (0.12 .. 0.88)
         final t = slots == 1 ? 0.5 : (0.12 + (i / (slots - 1)) * 0.76);
@@ -850,14 +880,63 @@ class DynamicShelfStockWidget extends StatelessWidget {
       return widgets;
     }
 
-    // ── C. RIGHT-WALL PERSPECTIVE STACKED GOODS (De Lata, Noodles, Bigas) ─
-    // Bottom row stands squarely on the exact slanted wooden plank; overflow stacks cleanly on top (grocery pyramid!)
+    // ── C. STACKED GOODS (De Lata, Noodles, Bigas) ───────────────────────
+    // Bottom row stands squarely on shelf plank; overflow stacks cleanly on top
     if (zone.displayStyle == ShelfDisplayStyle.shelfStacked) {
+      final isBackView =
+          (zone.floorLeftFrac - zone.floorRightFrac).abs() < 0.001;
       final perRow = zone.maxPerRow;
       final bottomCount = count > perRow ? perRow : count;
       final topCount = count > perRow ? (count - perRow) : 0;
       final baseH = screenHeight * zone.itemHeightFrac;
 
+      if (isBackView) {
+        // Flat orthogonal back view: items sit squarely side-by-side on Plank 1
+        final itemH = baseH;
+        final itemW = ((zw / perRow) * 0.92).clamp(14.0, itemH * 1.15);
+        final floorY = _localFloorY(0.5);
+
+        // 1. Bottom row sitting directly on Plank 1
+        for (int i = 0; i < bottomCount; i++) {
+          final centerX = (i + 0.5) * (zw / bottomCount);
+          widgets.add(
+            Positioned(
+              left: centerX - itemW / 2,
+              top: floorY - itemH,
+              width: itemW,
+              height: itemH,
+              child: Image.memory(
+                bytes,
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomCenter,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+          );
+        }
+
+        // 2. Second row stacked cleanly ON TOP of the bottom items (if count > maxPerRow)
+        for (int i = 0; i < topCount; i++) {
+          final centerX = (i + 0.5) * (zw / topCount);
+          widgets.add(
+            Positioned(
+              left: centerX - itemW / 2,
+              top: floorY - itemH * 1.88,
+              width: itemW * 0.94,
+              height: itemH * 0.94,
+              child: Image.memory(
+                bytes,
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomCenter,
+                filterQuality: FilterQuality.none,
+              ),
+            ),
+          );
+        }
+        return widgets;
+      }
+
+      // Slanted 1-point perspective for front-view right-wall shelf:
       // 1. Bottom row sitting directly on the slanted wooden plank
       for (int i = 0; i < bottomCount; i++) {
         final t = perRow == 1 ? 0.5 : (0.17 + (i / (perRow - 1)) * 0.66);
