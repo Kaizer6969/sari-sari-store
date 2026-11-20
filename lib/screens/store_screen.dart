@@ -1367,14 +1367,14 @@ class _StoreScreenState extends State<StoreScreen>
               // 5A. CLICKABLE LEFT WOODEN DOOR -> OPENS GARAGE (GARAHE) FOR DELIVERIES!
               Positioned(
                 left: 0,
-                top: h * 0.14,
-                width: w * 0.160,
-                height: h * 0.72,
+                top: h * 0.12,
+                width: w * 0.135,
+                height: h * 0.80,
                 child: GestureDetector(
                   onTap: _goToGarage,
                   behavior: HitTestBehavior.opaque,
                   child: Align(
-                    alignment: const Alignment(0.0, 0.35),
+                    alignment: const Alignment(0.0, 0.25),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 7,
