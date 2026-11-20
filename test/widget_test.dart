@@ -55,4 +55,35 @@ void main() {
     expect(find.byType(CustomerOrderChecklistCard), findsNothing);
     expect(gameState.reputation, initialRep - 5);
   });
+
+  testWidgets('2-View Turn Around: Tapping floor arrow turns to back shelves and back to front', (WidgetTester tester) async {
+    final gameState = GameState.newGame();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: StoreScreen(gameState: gameState),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Initially in Harap view: floor arrow to turn around exists
+    expect(find.text('LUMINGON SA LIKOD'), findsOneWidget);
+    expect(find.text('[ ⬇️ LUMINGON SA LIKOD (PANINDA 📦) ]'), findsOneWidget);
+
+    // Tap the floor arrow to turn around to the back
+    await tester.tap(find.text('LUMINGON SA LIKOD'));
+    await tester.pump();
+
+    // Now in Likod view: shows back shelf indicator and return arrow
+    expect(find.text('ESTANTE SA LIKOD (KUNIN ANG ORDER)'), findsOneWidget);
+    expect(find.text('HARAP SA BINTANA'), findsOneWidget);
+    expect(find.text('[ ⬆️ HARAP SA BINTANA (CUSTOMER) ]'), findsOneWidget);
+
+    // Tap return arrow to turn back to front window
+    await tester.tap(find.text('HARAP SA BINTANA'));
+    await tester.pump();
+
+    // Back in Harap view
+    expect(find.text('LUMINGON SA LIKOD'), findsOneWidget);
+  });
 }

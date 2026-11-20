@@ -48,6 +48,7 @@ class _StoreScreenState extends State<StoreScreen>
   final Map<String, int> _pickedItems = {};
   int _customerTimeLeft = _maxCustomerSeconds;
   bool _isPausedForDialog = false;
+  bool _isFacingBack = false; // 2-View: false = Front Window & Customer, true = Back Shelves & Inventory
   String? _lastPickedItemId;
   String? _lastRestockedItemId;
   String? _lastWrongItemId;
@@ -1305,23 +1306,31 @@ class _StoreScreenState extends State<StoreScreen>
           return Stack(
             fit: StackFit.expand,
             children: [
-              // 1. 16-BIT PIXEL ART SARI-SARI STORE (Open Shutters vs Closed Bolted Shutters!)
-              // Products are rendered dynamically on top based on live inventory!
+              // 1. 16-BIT PIXEL ART SARI-SARI STORE (Harap: Bintana & Window | Likod: Estante ng Paninda)
               Positioned.fill(
-                child: Image.memory(
-                  state.storeOpen
-                      ? ItemImageData.emptyStoreBgBytes
-                      : ItemImageData.closedStoreBgBytes,
-                  gaplessPlayback: true,
-                  width: w,
-                  height: h,
-                  fit: BoxFit.fill,
-                  filterQuality: FilterQuality.none, // Crisp sharp pixel blocks
-                ),
+                child: _isFacingBack
+                    ? Image.asset(
+                        'assets/images/store_back_view.jpg',
+                        gaplessPlayback: true,
+                        width: w,
+                        height: h,
+                        fit: BoxFit.fill,
+                        filterQuality: FilterQuality.none, // Sharp retro pixels
+                      )
+                    : Image.memory(
+                        state.storeOpen
+                            ? ItemImageData.emptyStoreBgBytes
+                            : ItemImageData.closedStoreBgBytes,
+                        gaplessPlayback: true,
+                        width: w,
+                        height: h,
+                        fit: BoxFit.fill,
+                        filterQuality: FilterQuality.none, // Crisp sharp pixel blocks
+                      ),
               ),
 
-              // 2. OUTSIDE WINDOW APERTURE (Only visible when window shutters are OPEN!)
-              if (state.storeOpen)
+              // 2. OUTSIDE WINDOW APERTURE (Only visible when facing FRONT and window shutters are OPEN!)
+              if (!_isFacingBack && state.storeOpen)
                 Positioned(
                   left: windowLeft,
                   top: windowTop,
@@ -1503,8 +1512,11 @@ class _StoreScreenState extends State<StoreScreen>
               ),
 
               // 5. DYNAMIC LIVE INVENTORY ON SHELVES, HANGING ROD & COUNTER
-              // Only items you currently have in stock appear (plus active restock target when holding a box!)
-              for (final zone in ShelfHotspotZone.allZones)
+              // In Harap View: Front counter items (Candy, Itlog, Yosi)
+              // In Likod View: All 12 items on back wall shelves & hanging rail!
+              for (final zone in (_isFacingBack
+                  ? ShelfHotspotZone.backViewZones
+                  : ShelfHotspotZone.frontViewZones))
                 () {
                   final item = GameConstants.itemById(zone.itemId);
                   if (item == null) return const SizedBox.shrink();
@@ -1545,8 +1557,9 @@ class _StoreScreenState extends State<StoreScreen>
                   );
                 }(),
 
-              // 5A. CLICKABLE LEFT WOODEN DOOR -> OPENS GARAGE (GARAHE) FOR DELIVERIES!
-              Positioned(
+              // 5A. CLICKABLE LEFT WOODEN DOOR -> OPENS GARAGE (GARAHE) FOR DELIVERIES! (Only when facing FRONT)
+              if (!_isFacingBack)
+                Positioned(
                 left: 0,
                 top: h * 0.12,
                 width: w * 0.135,
@@ -1621,6 +1634,179 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
               ),
 
+              // 5C. DOORWAY TO BODEGA / REF (Only when facing BACK)
+              if (_isFacingBack)
+                Positioned(
+                  left: 0,
+                  top: h * 0.15,
+                  width: w * 0.20,
+                  height: h * 0.75,
+                  child: GestureDetector(
+                    onTap: _goToBackRoom,
+                    behavior: HitTestBehavior.opaque,
+                    child: Align(
+                      alignment: const Alignment(0.0, 0.25),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xD92C3E50),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: const Color(0xFFFFF176),
+                            width: 1.6,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black87,
+                              offset: Offset(2, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const PixelText(
+                              '🚪 BODEGA / REF',
+                              size: 9.5,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            if (state.totalBodegaBoxCount > 0) ...[
+                              const SizedBox(height: 2),
+                              PixelText(
+                                '📦 ${state.totalBodegaBoxCount} Box!',
+                                size: 8.5,
+                                color: const Color(0xFFFFF176),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 5D. INTERACTIVE FLOOR TURN-AROUND ARROW (Where yellow arrow was drawn!)
+              Positioned(
+                left: w * 0.14,
+                bottom: 68,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isFacingBack = !_isFacingBack;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _isFacingBack
+                          ? (_allItemsPicked
+                              ? const Color(0xFF27AE60)
+                              : const Color(0xFF2980B9))
+                          : const Color(0xFFD35400),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _isFacingBack && _allItemsPicked
+                            ? const Color(0xFF2ECC71)
+                            : const Color(0xFFFFF176),
+                        width: 2.2,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black87,
+                          offset: Offset(2, 3),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _isFacingBack
+                              ? (_allItemsPicked ? '✅' : '⬆️')
+                              : '⬇️',
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(width: 6),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PixelText(
+                              _isFacingBack
+                                  ? (_allItemsPicked
+                                      ? 'KUMPLETO NA!'
+                                      : 'HARAP SA BINTANA')
+                                  : 'LUMINGON SA LIKOD',
+                              size: 10.5,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            PixelText(
+                              _isFacingBack
+                                  ? (_allItemsPicked
+                                      ? 'Magpabayad 💵'
+                                      : 'Bumalik sa Harap 🪟')
+                                  : 'Kunin ang Paninda 📦',
+                              size: 8.5,
+                              color: const Color(0xFFFFF176),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5E. TOP BADGE WHEN IN BACK VIEW
+              if (_isFacingBack)
+                Positioned(
+                  top: 50,
+                  left: w * 0.28,
+                  right: w * 0.28,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xE61A252F),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: const Color(0xFF3498DB),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('📦', style: TextStyle(fontSize: 12)),
+                            SizedBox(width: 6),
+                            PixelText(
+                              'ESTANTE SA LIKOD (KUNIN ANG ORDER)',
+                              size: 10,
+                              color: Color(0xFF85C1E9),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
               // 5B. OVERALL COZY STORE LIGHTING AT NIGHT (IgnorePointer so shelves stay tappable!)
               if (hour >= 19 || hour < 6)
                 Positioned.fill(
@@ -1638,7 +1824,8 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
 
               // 6B. PACKED ORDER BAG ON COUNTER (Once all items are gathered, ready to sell!)
-              if (state.storeOpen &&
+              if (!_isFacingBack &&
+                  state.storeOpen &&
                   _currentCustomer != null &&
                   _allItemsPicked)
                 Positioned(
@@ -1680,7 +1867,7 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
 
               // 6C. CUSTOMER SPEECH BUBBLE (Floating cleanly above customer's head)
-              if (state.storeOpen && _currentCustomer != null)
+              if (!_isFacingBack && state.storeOpen && _currentCustomer != null)
                 Positioned(
                   left: (windowLeft + custCenterX - 110).clamp(12.0, w - 232.0),
                   width: 220,
@@ -1862,8 +2049,8 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
               ),
 
-              // 9. STORE CLOSED NOTICE (If store is shut down)
-              if (!state.storeOpen)
+              // 9. STORE CLOSED NOTICE (If store is shut down, only shown in Harap view)
+              if (!_isFacingBack && !state.storeOpen)
                 Positioned(
                   left: windowLeft + (windowWidth - 280) / 2,
                   top: windowTop + windowHeight * 0.30,
@@ -1902,7 +2089,6 @@ class _StoreScreenState extends State<StoreScreen>
                   ),
                 ),
 
-              // 10. BOTTOM ACTION BUTTONS (LEFT: Arrow to Back Room | RIGHT: Close / Open Store)
               // 9B. HELD BOX FLOATING HUD (When carrying a box from the Storage Rack to restock!)
               if (state.isHoldingBox)
                 Positioned(
@@ -1917,45 +2103,62 @@ class _StoreScreenState extends State<StoreScreen>
                   ),
                 ),
 
-              // 10. BOTTOM ACTION BUTTONS (LEFT: Arrow to Back Room | RIGHT: Close / Open Store)
+              // 10. BOTTOM ACTION BUTTONS (LEFT: Turn Around Toggle | RIGHT: Open/Close or Bodega)
               Positioned(
                 bottom: 12,
                 left: 16,
                 right: 16,
                 child: Row(
                   children: [
-                    // LEFT BUTTON: Arrow going to the back of the store (Ref & Storage Rack)
+                    // LEFT BUTTON: View toggle (Harap sa Bintana / Lumingon sa Likod)
                     Expanded(
                       flex: 1,
                       child: PixelButton(
-                        label:
-                            state.totalBodegaBoxCount > 0
-                                ? '[ ⬅️ PUNTA SA LIKOD (📦 ${state.totalBodegaBoxCount}) ]'
-                                : '[ ⬅️ PUNTA SA LIKOD ]',
-                        color: const Color(0xFF2980B9),
+                        label: _isFacingBack
+                            ? (_allItemsPicked
+                                ? '[ ✅ KUMPLETO! HARAP SA BINTANA ⬆️ ]'
+                                : '[ ⬆️ HARAP SA BINTANA (CUSTOMER) ]')
+                            : '[ ⬇️ LUMINGON SA LIKOD (PANINDA 📦) ]',
+                        color: _isFacingBack
+                            ? (_allItemsPicked
+                                ? const Color(0xFF27AE60)
+                                : const Color(0xFF2980B9))
+                            : const Color(0xFFD35400),
                         height: 50,
-                        fontSize: 12.5,
-                        onPressed: _goToBackRoom,
+                        fontSize: 12.0,
+                        onPressed: () {
+                          setState(() {
+                            _isFacingBack = !_isFacingBack;
+                          });
+                        },
                       ),
                     ),
                     const SizedBox(width: 14),
 
-                    // RIGHT BUTTON: Close or Open the Store
+                    // RIGHT BUTTON: Close or Open Store (in Harap) / Bodega & Ref (in Likod)
                     Expanded(
                       flex: 1,
-                      child: PixelButton(
-                        label:
-                            state.storeOpen
-                                ? '[ 🔴 ISARA ANG TINDAHAN ]'
-                                : '[ 🟢 BUKSAN ANG TINDAHAN ]',
-                        color:
-                            state.storeOpen
-                                ? const Color(0xFFE53935)
-                                : const Color(0xFF2E7D32),
-                        height: 50,
-                        fontSize: 12.5,
-                        onPressed: _toggleStoreOpenClose,
-                      ),
+                      child: _isFacingBack
+                          ? PixelButton(
+                              label: state.totalBodegaBoxCount > 0
+                                  ? '[ 🚪 PUNTA SA BODEGA / REF (📦 ${state.totalBodegaBoxCount}) ]'
+                                  : '[ 🚪 PUNTA SA BODEGA / REF ]',
+                              color: const Color(0xFF34495E),
+                              height: 50,
+                              fontSize: 12.0,
+                              onPressed: _goToBackRoom,
+                            )
+                          : PixelButton(
+                              label: state.storeOpen
+                                  ? '[ 🔴 ISARA ANG TINDAHAN ]'
+                                  : '[ 🟢 BUKSAN ANG TINDAHAN ]',
+                              color: state.storeOpen
+                                  ? const Color(0xFFE53935)
+                                  : const Color(0xFF2E7D32),
+                              height: 50,
+                              fontSize: 12.5,
+                              onPressed: _toggleStoreOpenClose,
+                            ),
                     ),
                   ],
                 ),
