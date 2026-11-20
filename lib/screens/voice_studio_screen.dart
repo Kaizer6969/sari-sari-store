@@ -71,18 +71,18 @@ const _allPersonas = [
     [_greet, _pay],
   ),
   _PersonaData(
-    'it_student', '💻', 'Earl (IT Student)',
-    'IT College Student — nagpupuyat sa coding',
+    'earl', '💻', 'Earl (IT Student)',
+    'IT Student (Light Blue Polo) — pampagising sa coding',
     [_greet, _pay],
   ),
   _PersonaData(
-    'tropa_mark', '😎', 'Mark (Tropa)',
-    'Friendly Tropa — masiglang boses',
+    'andrie', '😎', 'Andrie (Tropa)',
+    'Tropa (Dark Grey Crewneck) — masiglang boses',
     [_greet, _pay],
   ),
   _PersonaData(
-    'california_karl', '🧢', 'Karl (Gamer)',
-    'Gamer / Estudyante — paboritong merienda',
+    'jake', '🧢', 'Jake (California)',
+    'California Shirt — merienda noodles at tubig',
     [_greet, _pay],
   ),
 ];
