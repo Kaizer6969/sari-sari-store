@@ -12,6 +12,9 @@ enum CustomerType {
   scammer,
   lolaConching,
   alingNena,
+  itStudent,
+  tropaMark,
+  californiaGuy,
 }
 
 class CustomerPersona {
@@ -87,6 +90,30 @@ class CustomerPersona {
       greeting: 'Nag-GCash na po ako ate, patingin! 📱',
       defaultItem: 'de_lata',
       assetPath: 'assets/images/scammer.png',
+    ),
+    CustomerPersona(
+      id: 'it_student',
+      name: 'Earl (IT Student)',
+      type: CustomerType.itStudent,
+      greeting: 'Ate, pabili pong Kape pampagising sa coding! ☕',
+      defaultItem: 'kape',
+      assetPath: 'assets/images/customer_it_student.png',
+    ),
+    CustomerPersona(
+      id: 'tropa_mark',
+      name: 'Mark (Tropa)',
+      type: CustomerType.tropaMark,
+      greeting: 'Boss, pabili ngang malamig na Softdrinks at Chichirya! 🥤',
+      defaultItem: 'softdrinks',
+      assetPath: 'assets/images/customer_tropa_mark.png',
+    ),
+    CustomerPersona(
+      id: 'california_karl',
+      name: 'Karl (Gamer)',
+      type: CustomerType.californiaGuy,
+      greeting: 'Ate, pabili pong Noodles at Tubig pang-merienda! 🍜',
+      defaultItem: 'noodles',
+      assetPath: 'assets/images/customer_california_karl.png',
     ),
   ];
 }

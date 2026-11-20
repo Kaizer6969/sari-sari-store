@@ -8,6 +8,8 @@ void speakCustomerTextImpl(
   String text, {
   double pitch = 1.0,
   double rate = 1.0,
+  String? personaId,
+  String? clipType,
 }) {
   // No-op in headless VM tests
 }

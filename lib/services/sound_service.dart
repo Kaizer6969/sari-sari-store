@@ -2,7 +2,7 @@ import 'sound_service_stub.dart'
     if (dart.library.js_interop) 'sound_service_web.dart'
     as impl;
 
-/// Plays synthesized retro sound effects and speech audio
+/// Plays synthesized retro sound effects and customer speech audio
 class SoundService {
   SoundService._();
 
@@ -11,12 +11,23 @@ class SoundService {
     impl.playTruckHornImpl();
   }
 
-  /// Plays customer dialogue speech (browser Web Speech API + procedural retro vocal blips)
+  /// Plays customer dialogue audio:
+  /// 1. If user recorded a voice clip → plays their recording
+  /// 2. Otherwise → plays retro game vocal chatter blips
+  /// (Web Speech TTS removed — users record their own voices via Voice Studio)
   static void speakCustomerText(
     String text, {
     double pitch = 1.0,
     double rate = 1.0,
+    String? personaId,
+    String? clipType,
   }) {
-    impl.speakCustomerTextImpl(text, pitch: pitch, rate: rate);
+    impl.speakCustomerTextImpl(
+      text,
+      pitch: pitch,
+      rate: rate,
+      personaId: personaId,
+      clipType: clipType,
+    );
   }
 }

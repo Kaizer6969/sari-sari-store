@@ -19,6 +19,7 @@ import 'inventory_screen.dart';
 import 'back_room_screen.dart';
 import 'garage_screen.dart';
 import 'title_screen.dart';
+import 'voice_studio_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   final GameState gameState;
@@ -574,6 +575,12 @@ class _StoreScreenState extends State<StoreScreen>
         return 0.90;
       case CustomerType.alingNena:
         return 1.10;
+      case CustomerType.itStudent:
+        return 1.00;
+      case CustomerType.tropaMark:
+        return 0.95;
+      case CustomerType.californiaGuy:
+        return 1.05;
     }
   }
 
@@ -589,6 +596,9 @@ class _StoreScreenState extends State<StoreScreen>
         return 0.85;
       case CustomerType.mangBoy:
         return 0.95;
+      case CustomerType.itStudent:
+      case CustomerType.tropaMark:
+      case CustomerType.californiaGuy:
       default:
         return 1.0;
     }
@@ -598,7 +608,13 @@ class _StoreScreenState extends State<StoreScreen>
     final text = customText ?? customer.speechLine;
     final pitch = _customerVoicePitch(customer.persona?.type);
     final rate = _customerVoiceRate(customer.persona?.type);
-    SoundService.speakCustomerText(text, pitch: pitch, rate: rate);
+    SoundService.speakCustomerText(
+      text,
+      pitch: pitch,
+      rate: rate,
+      personaId: customer.persona?.id,
+      clipType: customText != null ? 'pay' : 'greet',
+    );
   }
 
   String _personaAvatar(CustomerType type) {
@@ -621,6 +637,12 @@ class _StoreScreenState extends State<StoreScreen>
         return '👵';
       case CustomerType.alingNena:
         return '👩';
+      case CustomerType.itStudent:
+        return '💻';
+      case CustomerType.tropaMark:
+        return '😎';
+      case CustomerType.californiaGuy:
+        return '🧢';
     }
   }
 
@@ -994,6 +1016,27 @@ class _StoreScreenState extends State<StoreScreen>
                       widget.gameState.startNewDay();
                     });
                     SaveManager.saveGame(widget.gameState);
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Voice Studio
+                PixelButton(
+                  label: '🎙️ VOICE STUDIO (I-record ang Sariling Boses)',
+                  fontSize: 11,
+                  height: 42,
+                  color: const Color(0xFF16A085),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    setState(() => _isPausedForDialog = true);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const VoiceStudioScreen(),
+                      ),
+                    ).then((_) {
+                      if (mounted) setState(() => _isPausedForDialog = false);
+                    });
                   },
                 ),
                 const SizedBox(height: 10),

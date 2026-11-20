@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import 'voice_pack_service_web.dart' as voicePack;
 
 /// Web Audio API synthesizer for an authentic dual-tone delivery truck air horn ("HONK! HOOOONK!")
 void playTruckHornImpl() {
@@ -68,17 +69,27 @@ void _playHornBlast(
   }
 }
 
-/// Web Speech Synthesis + Procedural Retro Game Vocal Chatter synthesizer
+/// Customer dialogue audio: plays user's recorded voice if available,
+/// otherwise plays procedural retro game vocal chatter blips.
+/// Web Speech TTS removed — users record their own voices via Voice Studio.
 void speakCustomerTextImpl(
   String text, {
   double pitch = 1.0,
   double rate = 1.0,
+  String? personaId,
+  String? clipType,
 }) {
-  // 1. Play cute procedural retro vocal chatter blips through Web Audio API
-  _playVocalChatterBlips(pitch: pitch, text: text);
-
-  // 2. Play natural spoken Filipino voice through browser SpeechSynthesis API
-  _speakWithWebSpeech(text, pitch: pitch, rate: rate);
+  if (personaId != null && clipType != null) {
+    // Try user's recorded voice first; fall back to retro chatter blips
+    voicePack.playIfAvailableImpl(personaId, clipType).then((played) {
+      if (!played) {
+        _playVocalChatterBlips(pitch: pitch, text: text);
+      }
+    });
+  } else {
+    // No persona info — just play retro chatter blips
+    _playVocalChatterBlips(pitch: pitch, text: text);
+  }
 }
 
 void _speakWithWebSpeech(
