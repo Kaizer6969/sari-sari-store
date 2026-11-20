@@ -164,7 +164,7 @@ class ScamDialog extends StatelessWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.15),
+                              color: statusColor.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(

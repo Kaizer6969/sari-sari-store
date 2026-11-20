@@ -545,6 +545,13 @@ class StoreArtPainter extends CustomPainter {
       case CustomerType.alingNena:
       case CustomerType.customerGirl:
       case CustomerType.regularGuy:
+      case CustomerType.itStudent:
+      case CustomerType.tropaMark:
+      case CustomerType.californiaGuy:
+      case CustomerType.david:
+      case CustomerType.nick:
+      case CustomerType.ken:
+      case CustomerType.vhasty:
         _drawAlingNena(canvas, center, skin, stroke);
         break;
     }

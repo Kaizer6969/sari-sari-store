@@ -15,6 +15,10 @@ enum CustomerType {
   itStudent,
   tropaMark,
   californiaGuy,
+  david,
+  nick,
+  ken,
+  vhasty,
 }
 
 class CustomerPersona {
@@ -114,6 +118,38 @@ class CustomerPersona {
       greeting: 'Ate, pabili pong Noodles at Tubig pang-merienda! 🍜',
       defaultItem: 'noodles',
       assetPath: 'assets/images/customer_california_karl.png',
+    ),
+    CustomerPersona(
+      id: 'david',
+      name: 'David (XXLFCH)',
+      type: CustomerType.david,
+      greeting: 'Boss, pabili po ng Kape at Chichirya pampagana! ☕',
+      defaultItem: 'kape',
+      assetPath: 'assets/images/customer_david.png',
+    ),
+    CustomerPersona(
+      id: 'nick',
+      name: 'Nick (T-Pose)',
+      type: CustomerType.nick,
+      greeting: 'Ate, pabili pong Noodles at Softdrinks! 🍜',
+      defaultItem: 'noodles',
+      assetPath: 'assets/images/customer_nick.png',
+    ),
+    CustomerPersona(
+      id: 'ken',
+      name: 'Ken (Friendly)',
+      type: CustomerType.ken,
+      greeting: 'Pabili po ng malamig na Tubig at Kape! 💧',
+      defaultItem: 'tubig',
+      assetPath: 'assets/images/customer_ken.png',
+    ),
+    CustomerPersona(
+      id: 'vhasty',
+      name: 'Vhasty (NU Student)',
+      type: CustomerType.vhasty,
+      greeting: 'Ate, pabili pong Kendi at Softdrinks! 🍬',
+      defaultItem: 'candy',
+      assetPath: 'assets/images/customer_vhasty.png',
     ),
   ];
 }

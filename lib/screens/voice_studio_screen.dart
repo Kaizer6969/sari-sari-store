@@ -86,6 +86,26 @@ const _allPersonas = [
     'California Shirt — merienda noodles at tubig',
     [_greet, _pay, _leave],
   ),
+  _PersonaData(
+    'david', '🎒', 'David (XXLFCH)',
+    'Naka-grey sweater — pampagana kape at chichirya',
+    [_greet, _pay, _leave],
+  ),
+  _PersonaData(
+    'nick', '🙌', 'Nick (T-Pose)',
+    'Naka-salamin at T-pose — noodles at softdrinks',
+    [_greet, _pay, _leave],
+  ),
+  _PersonaData(
+    'ken', '😁', 'Ken (Friendly)',
+    'Naka-braces at ngiti — malamig na tubig at kape',
+    [_greet, _pay, _leave],
+  ),
+  _PersonaData(
+    'vhasty', '👓', 'Vhasty (NU Student)',
+    'NU Student na naka-salamin — kendi at softdrinks',
+    [_greet, _pay, _leave],
+  ),
 ];
 
 // ── Voice Studio Screen ──────────────────────────────────────────────────

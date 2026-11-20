@@ -593,6 +593,14 @@ class _StoreScreenState extends State<StoreScreen>
         return 0.95;
       case CustomerType.californiaGuy:
         return 1.05;
+      case CustomerType.david:
+        return 0.95;
+      case CustomerType.nick:
+        return 1.10;
+      case CustomerType.ken:
+        return 1.00;
+      case CustomerType.vhasty:
+        return 1.05;
     }
   }
 
@@ -611,6 +619,10 @@ class _StoreScreenState extends State<StoreScreen>
       case CustomerType.itStudent:
       case CustomerType.tropaMark:
       case CustomerType.californiaGuy:
+      case CustomerType.david:
+      case CustomerType.nick:
+      case CustomerType.ken:
+      case CustomerType.vhasty:
       default:
         return 1.0;
     }
@@ -637,6 +649,14 @@ class _StoreScreenState extends State<StoreScreen>
         return "Grabe ang tagal 'tol, sa kabila na lang ako bibili!";
       case CustomerType.californiaGuy:
         return "Ang bagal naman, gutom na 'ko! Aalis na 'ko!";
+      case CustomerType.david:
+        return "Aba'y kay tagal naman, aalis na lang ako!";
+      case CustomerType.nick:
+        return "Ang tagal naman 'tol! Sayang oras, babay!";
+      case CustomerType.ken:
+        return "Sige po ate, sa susunod na lang po!";
+      case CustomerType.vhasty:
+        return "Tsk, ang tagal naman, male-late na 'ko sa klase!";
       case CustomerType.bongbong:
         return "Ang tagal-tagal naman, ayoko na!";
       case CustomerType.tinay:
@@ -697,6 +717,14 @@ class _StoreScreenState extends State<StoreScreen>
         return '😎';
       case CustomerType.californiaGuy:
         return '🧢';
+      case CustomerType.david:
+        return '🎒';
+      case CustomerType.nick:
+        return '🙌';
+      case CustomerType.ken:
+        return '😁';
+      case CustomerType.vhasty:
+        return '👓';
     }
   }
 
