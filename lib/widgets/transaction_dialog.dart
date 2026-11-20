@@ -371,20 +371,13 @@ class _TransactionDialogState extends State<TransactionDialog>
                   ),
                 ),
 
-                // 4. CENTER-BOTTOM: Open Cash Drawer (Kaha)
+                // 4. CENTER-BOTTOM: Open Cash Drawer (Kaha) - 1:1 Pixel Art
                 Positioned(
-                  bottom: 8,
-                  left: 270,
-                  width: 430,
-                  height: 236,
+                  bottom: 6,
+                  left: 275,
+                  width: 395,
+                  height: 330,
                   child: _buildCashDrawer(),
-                ),
-
-                // Customer resting hand on the wooden counter table above the drawer
-                Positioned(
-                  bottom: 238,
-                  left: 360,
-                  child: _buildCustomerRestingHand(),
                 ),
 
                 // 5. RIGHT: Action Button "GIVE CHANGE"
@@ -984,6 +977,162 @@ class _TransactionDialogState extends State<TransactionDialog>
   // SECTION 4: OPEN CASH DRAWER (KAHA) - 1:1 REPLICA
   // ==========================================
   Widget _buildCashDrawer() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // 1. EXACT IMAGE ASSET FROM USER (1:1 with photo!)
+            Image.asset(
+              'assets/images/kaha_drawer.jpg',
+              width: w,
+              height: h,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.none, // Sharp 16-bit pixel art
+              errorBuilder: (context, error, stackTrace) {
+                return _buildCashDrawerFallback();
+              },
+            ),
+
+            // 2. Bill Compartment Tap Targets (Overlaying the exact slots in the image)
+            // Slot 1: ₱20 (Orange)
+            Positioned(
+              left: w * 0.118,
+              top: h * 0.255,
+              width: w * 0.198,
+              height: h * 0.357,
+              child: _buildDrawerSlotHitbox(20, isCoin: false, label: '₱20'),
+            ),
+
+            // Slot 2: ₱50 (Red)
+            Positioned(
+              left: w * 0.325,
+              top: h * 0.255,
+              width: w * 0.195,
+              height: h * 0.357,
+              child: _buildDrawerSlotHitbox(50, isCoin: false, label: '₱50'),
+            ),
+
+            // Slot 3: ₱100 (Purple)
+            Positioned(
+              left: w * 0.526,
+              top: h * 0.255,
+              width: w * 0.183,
+              height: h * 0.357,
+              child: _buildDrawerSlotHitbox(100, isCoin: false, label: '₱100'),
+            ),
+
+            // Slot 4: ₱1000 (Blue) / ₱500
+            Positioned(
+              left: w * 0.715,
+              top: h * 0.255,
+              width: w * 0.190,
+              height: h * 0.357,
+              child: _buildDrawerSlotHitbox(1000, isCoin: false, label: '₱1000'),
+            ),
+
+            // 3. Coin Well Tap Targets (Overlaying the exact coin wells in the image)
+            // Well 1: ₱1 Silver
+            Positioned(
+              left: w * 0.118,
+              top: h * 0.618,
+              width: w * 0.254,
+              height: h * 0.200,
+              child: _buildDrawerSlotHitbox(1, isCoin: true, label: '₱1'),
+            ),
+
+            // Well 2: ₱5 Silver
+            Positioned(
+              left: w * 0.378,
+              top: h * 0.618,
+              width: w * 0.262,
+              height: h * 0.200,
+              child: _buildDrawerSlotHitbox(5, isCoin: true, label: '₱5'),
+            ),
+
+            // Well 3: ₱10 Gold
+            Positioned(
+              left: w * 0.646,
+              top: h * 0.618,
+              width: w * 0.260,
+              height: h * 0.200,
+              child: _buildDrawerSlotHitbox(10, isCoin: true, label: '₱10'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDrawerSlotHitbox(
+    int amount, {
+    required bool isCoin,
+    required String label,
+  }) {
+    return GestureDetector(
+      key: ValueKey(isCoin ? 'coin_$amount' : 'bill_$amount'),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _addMoneyWithAnimation(amount, isCoin),
+      child: Container(
+        key: isCoin ? _coinKeys[amount] : _billKeys[amount],
+        color: Colors.transparent,
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            // Pill label badge for clarity & tests
+            Positioned(
+              top: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.white24, width: 0.8),
+                ),
+                child: PixelText(
+                  label,
+                  size: 8,
+                  color: Colors.white,
+                  hasShadow: false,
+                ),
+              ),
+            ),
+            if (!isCoin && amount == 1000)
+              Positioned(
+                top: 2,
+                right: 2,
+                child: GestureDetector(
+                  key: const ValueKey('bill_500'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _addMoneyWithAnimation(500, false),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1C40F).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.black87, width: 1),
+                    ),
+                    child: const PixelText(
+                      '₱500',
+                      size: 8,
+                      color: Colors.black,
+                      hasShadow: false,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Headless test fallback drawer
+  Widget _buildCashDrawerFallback() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -994,131 +1143,45 @@ class _TransactionDialogState extends State<TransactionDialog>
               color: const Color(0xFF282D35),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
               border: Border.all(color: const Color(0xFF16191D), width: 3),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black87,
-                  offset: Offset(0, 4),
-                  blurRadius: 8,
-                ),
-              ],
             ),
             child: Column(
               children: [
-                // Upper Row: EXACT 4 Bill Trays (₱20, ₱50, ₱100, ₱1000/₱500)
                 Expanded(
                   flex: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                    child: Row(
-                      children: [
-                        _buildBillCompartment(20, const Color(0xFFE87722)),
-                        const SizedBox(width: 3),
-                        _buildBillCompartment(50, const Color(0xFFE03A3E)),
-                        const SizedBox(width: 3),
-                        _buildBillCompartment(100, const Color(0xFF7E4B9B)),
-                        const SizedBox(width: 3),
-                        _buildBillCompartment(1000, const Color(0xFF2575A8)),
-                      ],
-                    ),
+                  child: Row(
+                    children: [
+                      _buildBillCompartment(20, const Color(0xFFE87722)),
+                      const SizedBox(width: 3),
+                      _buildBillCompartment(50, const Color(0xFFE03A3E)),
+                      const SizedBox(width: 3),
+                      _buildBillCompartment(100, const Color(0xFF7E4B9B)),
+                      const SizedBox(width: 3),
+                      _buildBillCompartment(1000, const Color(0xFF2575A8)),
+                    ],
                   ),
                 ),
-
-                // Heavy Divider between bills and coins
-                Container(
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1A1D22),
-                    border: Border(
-                      top: BorderSide(color: Color(0xFF383F4A), width: 1),
-                      bottom: BorderSide(color: Color(0xFF101215), width: 1),
-                    ),
-                  ),
-                ),
-
-                // Lower Row: EXACT 3 Coin Trays (₱1, ₱5, ₱10)
+                Container(height: 4, color: const Color(0xFF1A1D22)),
                 Expanded(
                   flex: 4,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                    child: Row(
-                      children: [
-                        _buildCoinWell(1),
-                        const SizedBox(width: 3),
-                        _buildCoinWell(5),
-                        const SizedBox(width: 3),
-                        _buildCoinWell(10),
-                      ],
-                    ),
+                  child: Row(
+                    children: [
+                      _buildCoinWell(1),
+                      const SizedBox(width: 3),
+                      _buildCoinWell(5),
+                      const SizedBox(width: 3),
+                      _buildCoinWell(10),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ),
-
-        // Front Face of Drawer (Angled down with circular keyhole lock in center)
         Container(
           height: 32,
-          decoration: BoxDecoration(
-            color: const Color(0xFF3A404A),
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(6)),
-            border: Border.all(color: const Color(0xFF22262C), width: 2.5),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black87,
-                offset: Offset(0, 6),
-                blurRadius: 8,
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Top bevel highlight lip
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 2,
-                child: Container(color: const Color(0xFF626B77)),
-              ),
-              // Circular Keyhole Lock in Center
-              Container(
-                width: 14,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4A525D),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF24282F), width: 1.5),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black38, offset: Offset(0, 1)),
-                  ],
-                ),
-                child: Center(
-                  child: Container(
-                    width: 2.2,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF14171A),
-                      borderRadius: BorderRadius.circular(0.5),
-                    ),
-                  ),
-                ),
-              ),
-              // Subtle paint scratch mark on upper-right edge
-              Positioned(
-                right: 32,
-                top: 3,
-                child: Container(
-                  width: 10,
-                  height: 1.5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6A7482),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
-              ),
-            ],
+          decoration: const BoxDecoration(
+            color: Color(0xFF3A404A),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
           ),
         ),
       ],
@@ -1530,18 +1593,6 @@ class _TransactionDialogState extends State<TransactionDialog>
     );
   }
 
-  Widget _buildCustomerRestingHand() {
-    return const IgnorePointer(
-      child: SizedBox(
-        width: 72,
-        height: 46,
-        child: CustomPaint(
-          painter: _CustomerRestingHandPainter(),
-        ),
-      ),
-    );
-  }
-
   Widget _buildCoinWidget(int amount, {required double size, bool showText = true}) {
     Color outerColor;
     Color? innerColor;
@@ -1620,93 +1671,6 @@ class _TransactionDialogState extends State<TransactionDialog>
               : null),
     );
   }
-}
-
-/// Custom painter for the customer's resting hand above the cash drawer
-class _CustomerRestingHandPainter extends CustomPainter {
-  const _CustomerRestingHandPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 1. Forest Green Sleeve (coming down from top)
-    final sleevePaint = Paint()..color = const Color(0xFF2D694B);
-    final outlinePaint = Paint()
-      ..color = const Color(0xFF14241B)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-
-    final sleevePath = Path();
-    sleevePath.moveTo(14, 0);
-    sleevePath.lineTo(46, 0);
-    sleevePath.lineTo(44, 14);
-    sleevePath.lineTo(12, 14);
-    sleevePath.close();
-
-    canvas.drawPath(sleevePath, sleevePaint);
-    canvas.drawPath(sleevePath, outlinePaint);
-
-    // Vertical sleeve highlight
-    canvas.drawLine(
-      const Offset(24, 0),
-      const Offset(23, 14),
-      Paint()
-        ..color = const Color(0xFF3E8D62)
-        ..strokeWidth = 2.0,
-    );
-
-    // 2. Black cuff band
-    final cuffPaint = Paint()..color = const Color(0xFF1A201C);
-    final cuffRect = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(11, 13, 35, 6),
-      const Radius.circular(2),
-    );
-    canvas.drawRRect(cuffRect, cuffPaint);
-
-    // 3. Customer Hand & Spread Fingers resting on wood plank
-    final skinPaint = Paint()..color = const Color(0xFFE29F76);
-    final skinShade = Paint()..color = const Color(0xFFC07B55);
-    final skinBorder = Paint()
-      ..color = const Color(0xFF4A2514)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round;
-
-    final handPath = Path();
-    handPath.moveTo(16, 19);
-    // Thumb resting to the left
-    handPath.quadraticBezierTo(5, 24, 9, 32);
-    handPath.quadraticBezierTo(15, 34, 19, 28);
-    // 4 fingers spread forward
-    handPath.lineTo(21, 42); // Index finger
-    handPath.lineTo(26, 43);
-    handPath.lineTo(28, 27);
-    handPath.lineTo(30, 44); // Middle finger
-    handPath.lineTo(35, 44);
-    handPath.lineTo(37, 27);
-    handPath.lineTo(39, 41); // Ring finger
-    handPath.lineTo(44, 41);
-    handPath.lineTo(45, 26);
-    handPath.lineTo(47, 36); // Pinky finger
-    handPath.lineTo(51, 35);
-    handPath.quadraticBezierTo(49, 23, 39, 19);
-    handPath.close();
-
-    // Drop shadow under hand on wood counter
-    canvas.drawPath(
-      handPath.shift(const Offset(2, 2)),
-      Paint()..color = Colors.black45,
-    );
-    canvas.drawPath(handPath, skinPaint);
-    canvas.drawPath(handPath, skinBorder);
-
-    // Finger knuckle crease lines
-    canvas.drawLine(const Offset(22, 32), const Offset(25, 32), skinShade..strokeWidth = 1.2);
-    canvas.drawLine(const Offset(31, 33), const Offset(34, 33), skinShade);
-    canvas.drawLine(const Offset(40, 31), const Offset(43, 31), skinShade);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Custom painter for wooden counter grain and plank planks
