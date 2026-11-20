@@ -16,6 +16,9 @@ void main() {
 
   testWidgets('StoreScreen loads pixel art artwork and interactive HUD', (WidgetTester tester) async {
     final gameState = GameState.newGame();
+    gameState.inventory['kape'] = 5;
+    gameState.inventory['noodles'] = 5;
+    gameState.inventory['tubig'] = 5;
     await tester.pumpWidget(
       MaterialApp(
         home: StoreScreen(gameState: gameState),
@@ -36,6 +39,8 @@ void main() {
 
   testWidgets('Customer leaves when 40-second timer runs out', (WidgetTester tester) async {
     final gameState = GameState.newGame();
+    gameState.inventory['kape'] = 5;
+    gameState.inventory['noodles'] = 5;
     final initialRep = gameState.reputation;
 
     await tester.pumpWidget(

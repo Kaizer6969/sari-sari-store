@@ -4,6 +4,7 @@ import '../services/save_manager.dart';
 import '../widgets/pixel_text.dart';
 import '../widgets/pixel_button.dart';
 import '../widgets/pixel_card.dart';
+import '../widgets/raket_dialog.dart';
 import 'supermarket_screen.dart';
 import 'barangay_screen.dart';
 
@@ -11,6 +12,17 @@ class MapScreen extends StatelessWidget {
   final GameState gameState;
 
   const MapScreen({super.key, required this.gameState});
+
+  void _openRaketDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => RaketDialog(
+        gameState: gameState,
+        onJobCompleted: () {},
+      ),
+    );
+  }
 
   void _goToSupermarket(BuildContext context) {
     gameState.advanceTime(30); // 30 mins travel
@@ -147,6 +159,21 @@ class MapScreen extends StatelessWidget {
                           badgeColor: gameState.hasPermit ? Colors.green : Colors.amber,
                           color: const Color(0xFF8E44AD),
                           onTap: () => _goToBarangay(context),
+                        ),
+                      ),
+
+                      // Location 4: BARANGAY PLAZA (Bottom-Left: Raketan / Sidelines)
+                      Positioned(
+                        bottom: 30,
+                        left: 16,
+                        child: _mapLocationTile(
+                          icon: '💼',
+                          title: 'BARANGAY PLAZA',
+                          subtitle: 'Mag-sideline para kumita',
+                          badge: 'Kumita ng Puhunan',
+                          badgeColor: const Color(0xFF27AE60),
+                          color: const Color(0xFF1E8449),
+                          onTap: () => _openRaketDialog(context),
                         ),
                       ),
                     ],

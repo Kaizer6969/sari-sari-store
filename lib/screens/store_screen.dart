@@ -15,6 +15,7 @@ import '../widgets/shelf_hotspot.dart';
 import '../widgets/held_box_hud.dart';
 import '../widgets/transaction_dialog.dart';
 import '../widgets/scam_dialog.dart';
+import '../widgets/raket_dialog.dart';
 import 'map_screen.dart';
 import 'inventory_screen.dart';
 import 'back_room_screen.dart';
@@ -967,6 +968,23 @@ class _StoreScreenState extends State<StoreScreen>
     });
   }
 
+  void _openRaketDialog() {
+    final state = widget.gameState;
+    setState(() => _isPausedForDialog = true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => RaketDialog(
+        gameState: state,
+        onJobCompleted: () {
+          if (mounted) setState(() {});
+        },
+      ),
+    ).then((_) {
+      if (mounted) setState(() => _isPausedForDialog = false);
+    });
+  }
+
   void _toggleStoreOpenClose() {
     setState(() {
       widget.gameState.toggleStore();
@@ -1119,6 +1137,41 @@ class _StoreScreenState extends State<StoreScreen>
                     ).then((_) {
                       if (mounted) setState(() => _isPausedForDialog = false);
                     });
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Raket Sidelines
+                PixelButton(
+                  label: '💼 MAG-RAKET SA BARANGAY (Sidelines)',
+                  fontSize: 11,
+                  height: 42,
+                  color: const Color(0xFF27AE60),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _openRaketDialog();
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Reset / New Game Day 1 (Empty Shelves)
+                PixelButton(
+                  label: '🔄 BAGONG LARO (Simulan sa 0 Paninda)',
+                  fontSize: 11,
+                  height: 42,
+                  color: const Color(0xFFC0392B),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final freshGame = GameState.newGame();
+                    await SaveManager.saveGame(freshGame);
+                    if (mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => StoreScreen(gameState: freshGame),
+                        ),
+                      );
+                    }
                   },
                 ),
                 const SizedBox(height: 10),

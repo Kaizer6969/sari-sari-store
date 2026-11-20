@@ -4,10 +4,10 @@ import '../utils/item_image_data.dart';
 import 'pixel_text.dart';
 
 enum ShelfDisplayStyle {
-  hangingStrip,  // Dangles in neat strips from the ceiling metal rod
-  shelfBottles,  // Bottles stand upright side-by-side along exact perspective shelf slope (never stacked on caps!)
-  shelfStacked,  // Cans / noodles / sacks sit along exact perspective slope & stack cleanly 2-high
-  counterRow,    // Sits neatly on the dark wooden counter
+  hangingStrip, // Dangles in neat strips from the ceiling metal rod
+  shelfBottles, // Bottles stand upright side-by-side along exact perspective shelf slope (never stacked on caps!)
+  shelfStacked, // Cans / noodles / sacks sit along exact perspective slope & stack cleanly 2-high
+  counterRow, // Sits neatly on the dark wooden counter
   counterEggTray, // Realistic-sized eggs nestled in a 2-row brown egg carton on the counter
 }
 
@@ -233,22 +233,23 @@ class ShelfHotspotZone {
   /// Back view zones matching store_back_view.jpg (1376x768)
   static const List<ShelfHotspotZone> backViewZones = [
     // ── Upper Hanging Metal Rail (Kape, Shampoo, Sabon, Chichirya) ──
+    // Hung cleanly from metal hooks across the ceiling rod (y = 0.320), clear of lightbulb!
     ShelfHotspotZone(
       itemId: 'kape',
-      leftFrac: 0.355,
-      topFrac: 0.315,
-      widthFrac: 0.095,
-      heightFrac: 0.170,
+      leftFrac: 0.220,
+      topFrac: 0.320,
+      widthFrac: 0.085,
+      heightFrac: 0.160,
       displayStyle: ShelfDisplayStyle.hangingStrip,
       maxVisible: 6,
       maxPerRow: 2,
     ),
     ShelfHotspotZone(
       itemId: 'shampoo',
-      leftFrac: 0.465,
-      topFrac: 0.315,
-      widthFrac: 0.095,
-      heightFrac: 0.170,
+      leftFrac: 0.330,
+      topFrac: 0.320,
+      widthFrac: 0.085,
+      heightFrac: 0.160,
       displayStyle: ShelfDisplayStyle.hangingStrip,
       maxVisible: 6,
       maxPerRow: 2,
@@ -256,9 +257,9 @@ class ShelfHotspotZone {
     ShelfHotspotZone(
       itemId: 'sabon',
       leftFrac: 0.575,
-      topFrac: 0.315,
-      widthFrac: 0.095,
-      heightFrac: 0.170,
+      topFrac: 0.320,
+      widthFrac: 0.090,
+      heightFrac: 0.160,
       displayStyle: ShelfDisplayStyle.hangingStrip,
       maxVisible: 6,
       maxPerRow: 2,
@@ -266,116 +267,122 @@ class ShelfHotspotZone {
     ShelfHotspotZone(
       itemId: 'chichirya',
       leftFrac: 0.690,
-      topFrac: 0.315,
-      widthFrac: 0.130,
-      heightFrac: 0.170,
+      topFrac: 0.320,
+      widthFrac: 0.135,
+      heightFrac: 0.160,
       displayStyle: ShelfDisplayStyle.hangingStrip,
       maxVisible: 6,
       maxPerRow: 3,
     ),
 
-    // ── Top Wooden Shelf Tier (Bigas, De Lata, Noodles) ─────────────
+    // ── Top Wooden Shelf Tier (Plank floor at exact y = 0.530) ─────────
     ShelfHotspotZone(
       itemId: 'bigas',
-      leftFrac: 0.350,
-      topFrac: 0.490,
-      widthFrac: 0.115,
-      heightFrac: 0.135,
+      leftFrac: 0.355,
+      topFrac: 0.410,
+      widthFrac: 0.105,
+      heightFrac: 0.125,
       displayStyle: ShelfDisplayStyle.shelfStacked,
       maxVisible: 4,
       maxPerRow: 2,
-      floorLeftFrac: 0.625,
-      floorRightFrac: 0.625,
-      itemHeightFrac: 0.090,
+      floorLeftFrac: 0.530,
+      floorRightFrac: 0.530,
+      itemHeightFrac: 0.065,
     ),
     ShelfHotspotZone(
       itemId: 'de_lata',
-      leftFrac: 0.480,
-      topFrac: 0.490,
-      widthFrac: 0.115,
-      heightFrac: 0.135,
+      leftFrac: 0.468,
+      topFrac: 0.410,
+      widthFrac: 0.095,
+      heightFrac: 0.125,
       displayStyle: ShelfDisplayStyle.shelfStacked,
       maxVisible: 6,
       maxPerRow: 3,
-      floorLeftFrac: 0.625,
-      floorRightFrac: 0.625,
-      itemHeightFrac: 0.080,
+      floorLeftFrac: 0.530,
+      floorRightFrac: 0.530,
+      itemHeightFrac: 0.052,
     ),
     ShelfHotspotZone(
       itemId: 'noodles',
-      leftFrac: 0.610,
-      topFrac: 0.490,
-      widthFrac: 0.135,
-      heightFrac: 0.135,
+      leftFrac: 0.568,
+      topFrac: 0.410,
+      widthFrac: 0.100,
+      heightFrac: 0.125,
       displayStyle: ShelfDisplayStyle.shelfStacked,
       maxVisible: 6,
       maxPerRow: 3,
-      floorLeftFrac: 0.625,
-      floorRightFrac: 0.625,
-      itemHeightFrac: 0.080,
+      floorLeftFrac: 0.530,
+      floorRightFrac: 0.530,
+      itemHeightFrac: 0.055,
     ),
 
-    // ── Middle Wooden Shelf Tier (Tubig, Softdrinks) ─────────────────
+    // ── Middle Wooden Shelf Tier (Plank floor at exact y = 0.657) ──────
     ShelfHotspotZone(
       itemId: 'tubig',
-      leftFrac: 0.350,
-      topFrac: 0.630,
-      widthFrac: 0.115,
-      heightFrac: 0.135,
+      leftFrac: 0.355,
+      topFrac: 0.535,
+      widthFrac: 0.105,
+      heightFrac: 0.125,
       displayStyle: ShelfDisplayStyle.shelfBottles,
       maxVisible: 4,
       maxPerRow: 4,
-      floorLeftFrac: 0.765,
-      floorRightFrac: 0.765,
-      itemHeightFrac: 0.095,
+      floorLeftFrac: 0.657,
+      floorRightFrac: 0.657,
+      itemHeightFrac: 0.082,
     ),
     ShelfHotspotZone(
       itemId: 'softdrinks',
-      leftFrac: 0.480,
-      topFrac: 0.630,
-      widthFrac: 0.135,
-      heightFrac: 0.135,
+      leftFrac: 0.468,
+      topFrac: 0.535,
+      widthFrac: 0.095,
+      heightFrac: 0.125,
       displayStyle: ShelfDisplayStyle.shelfBottles,
       maxVisible: 5,
       maxPerRow: 5,
-      floorLeftFrac: 0.765,
-      floorRightFrac: 0.765,
-      itemHeightFrac: 0.100,
+      floorLeftFrac: 0.657,
+      floorRightFrac: 0.657,
+      itemHeightFrac: 0.088,
     ),
 
-    // ── Counter Top Table (Candy, Itlog, Yosi) ───────────────────────
+    // ── Counter Top Table (Counter floor at exact y = 0.821) ───────────
     ShelfHotspotZone(
       itemId: 'candy',
-      leftFrac: 0.350,
-      topFrac: 0.770,
-      widthFrac: 0.130,
-      heightFrac: 0.110,
+      leftFrac: 0.345,
+      topFrac: 0.730,
+      widthFrac: 0.110,
+      heightFrac: 0.095,
       displayStyle: ShelfDisplayStyle.counterRow,
       maxVisible: 5,
       maxPerRow: 3,
-      itemHeightFrac: 0.085,
+      floorLeftFrac: 0.821,
+      floorRightFrac: 0.821,
+      itemHeightFrac: 0.075,
     ),
     ShelfHotspotZone(
       itemId: 'itlog',
-      leftFrac: 0.500,
-      topFrac: 0.770,
-      widthFrac: 0.130,
-      heightFrac: 0.090,
+      leftFrac: 0.480,
+      topFrac: 0.765,
+      widthFrac: 0.110,
+      heightFrac: 0.060,
       displayStyle: ShelfDisplayStyle.counterEggTray,
       maxVisible: 6,
       maxPerRow: 3,
+      floorLeftFrac: 0.821,
+      floorRightFrac: 0.821,
       itemHeightFrac: 0.045,
     ),
     ShelfHotspotZone(
       itemId: 'yosi',
-      leftFrac: 0.650,
-      topFrac: 0.770,
-      widthFrac: 0.100,
-      heightFrac: 0.090,
+      leftFrac: 0.620,
+      topFrac: 0.765,
+      widthFrac: 0.080,
+      heightFrac: 0.060,
       displayStyle: ShelfDisplayStyle.counterRow,
       maxVisible: 5,
       maxPerRow: 3,
-      itemHeightFrac: 0.065,
+      floorLeftFrac: 0.821,
+      floorRightFrac: 0.821,
+      itemHeightFrac: 0.055,
     ),
   ];
 }
@@ -400,11 +407,7 @@ class PixelBackStoreShelves extends StatelessWidget {
     return Stack(
       children: [
         // 1. Cozy wooden wall background
-        Positioned.fill(
-          child: Container(
-            color: const Color(0xFF2C1E14),
-          ),
-        ),
+        Positioned.fill(child: Container(color: const Color(0xFF2C1E14))),
 
         // 2. Beaded curtain / doorway on the left to Bodega
         Positioned(
@@ -424,9 +427,10 @@ class PixelBackStoreShelves extends StatelessWidget {
                 9,
                 (i) => Container(
                   width: 2,
-                  color: (i % 2 == 0)
-                      ? const Color(0xFF8D6E63)
-                      : const Color(0xFFD7CCC8),
+                  color:
+                      (i % 2 == 0)
+                          ? const Color(0xFF8D6E63)
+                          : const Color(0xFFD7CCC8),
                 ),
               ),
             ),
@@ -492,7 +496,10 @@ class PixelBackStoreShelves extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF795548),
-                      border: Border.all(color: const Color(0xFF2E1C14), width: 1),
+                      border: Border.all(
+                        color: const Color(0xFF2E1C14),
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),
@@ -563,11 +570,14 @@ class PixelBackStoreShelves extends StatelessWidget {
 class DynamicShelfStockWidget extends StatelessWidget {
   final ShelfHotspotZone zone;
   final Item item;
-  final int visibleStock; // Live stock minus already-picked items for current customer
+  final int
+  visibleStock; // Live stock minus already-picked items for current customer
   final int maxCapacity;
   final double screenHeight;
-  final bool isInteractive; // True while customer is waiting for items OR player is holding a box
-  final bool isRestockTarget; // True when player is holding THIS item's box to restock!
+  final bool
+  isInteractive; // True while customer is waiting for items OR player is holding a box
+  final bool
+  isRestockTarget; // True when player is holding THIS item's box to restock!
   final bool showUrgentHint;
   final bool justPicked;
   final bool justRestocked;
@@ -596,31 +606,37 @@ class DynamicShelfStockWidget extends StatelessWidget {
     final displayCount = visibleStock.clamp(0, zone.maxVisible);
 
     // If completely out of stock AND NOT a restock target AND no feedback flash, leave the wooden shelf cleanly empty!
-    if (visibleStock <= 0 && !isRestockTarget && !justPicked && !justRestocked && !justWrong) {
+    if (visibleStock <= 0 &&
+        !isRestockTarget &&
+        !justPicked &&
+        !justRestocked &&
+        !justWrong) {
       return const SizedBox.shrink();
     }
 
     final isFull = visibleStock >= maxCapacity;
 
-    final Color borderColor = (justPicked || justRestocked)
-        ? const Color(0xFF2ECC71)
-        : justWrong
+    final Color borderColor =
+        (justPicked || justRestocked)
+            ? const Color(0xFF2ECC71)
+            : justWrong
             ? const Color(0xFFE74C3C)
             : isRestockTarget
-                ? (isFull ? const Color(0xFFE67E22) : const Color(0xFF2ECC71))
-                : (isInteractive && showUrgentHint)
-                    ? const Color(0xFFF1C40F)
-                    : Colors.transparent;
+            ? (isFull ? const Color(0xFFE67E22) : const Color(0xFF2ECC71))
+            : (isInteractive && showUrgentHint)
+            ? const Color(0xFFF1C40F)
+            : Colors.transparent;
 
-    final Color bgTint = (justPicked || justRestocked)
-        ? const Color(0x402ECC71)
-        : justWrong
+    final Color bgTint =
+        (justPicked || justRestocked)
+            ? const Color(0x402ECC71)
+            : justWrong
             ? const Color(0x38E74C3C)
             : isRestockTarget
-                ? (isFull ? const Color(0x28E67E22) : const Color(0x2E2ECC71))
-                : (isInteractive && showUrgentHint)
-                    ? const Color(0x28F1C40F)
-                    : Colors.transparent;
+            ? (isFull ? const Color(0x28E67E22) : const Color(0x2E2ECC71))
+            : (isInteractive && showUrgentHint)
+            ? const Color(0x28F1C40F)
+            : Colors.transparent;
 
     final canTap = isRestockTarget || (isInteractive && visibleStock > 0);
 
@@ -637,9 +653,13 @@ class DynamicShelfStockWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: bgTint,
               borderRadius: BorderRadius.circular(5),
-              border: borderColor != Colors.transparent
-                  ? Border.all(color: borderColor, width: isRestockTarget ? 2.6 : 2.2)
-                  : null,
+              border:
+                  borderColor != Colors.transparent
+                      ? Border.all(
+                        color: borderColor,
+                        width: isRestockTarget ? 2.6 : 2.2,
+                      )
+                      : null,
             ),
             child: Stack(
               clipBehavior: Clip.none,
@@ -654,37 +674,49 @@ class DynamicShelfStockWidget extends StatelessWidget {
                   ),
 
                 // 2. COMPACT SHELF LABEL + LIVE STOCK / RESTOCK COUNTER
-                if (isRestockTarget || isInteractive || justPicked || justRestocked || justWrong)
+                if (isRestockTarget ||
+                    isInteractive ||
+                    justPicked ||
+                    justRestocked ||
+                    justWrong)
                   Positioned(
                     left: 0,
                     right: 0,
                     bottom: 2,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: (justPicked || justRestocked)
-                              ? const Color(0xF527AE60)
-                              : justWrong
+                          color:
+                              (justPicked || justRestocked)
+                                  ? const Color(0xF527AE60)
+                                  : justWrong
                                   ? const Color(0xF0C0392B)
                                   : isRestockTarget
-                                      ? (isFull
-                                          ? const Color(0xF0D35400)
-                                          : const Color(0xF01E8449))
-                                      : showUrgentHint
-                                          ? const Color(0xF0B7950B)
-                                          : const Color(0xD917202A),
+                                  ? (isFull
+                                      ? const Color(0xF0D35400)
+                                      : const Color(0xF01E8449))
+                                  : showUrgentHint
+                                  ? const Color(0xF0B7950B)
+                                  : const Color(0xD917202A),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: isRestockTarget
-                                ? Colors.white
-                                : showUrgentHint
+                            color:
+                                isRestockTarget
+                                    ? Colors.white
+                                    : showUrgentHint
                                     ? const Color(0xFFFFF176)
                                     : Colors.black87,
                             width: 1.2,
                           ),
                           boxShadow: const [
-                            BoxShadow(color: Colors.black54, offset: Offset(1, 1)),
+                            BoxShadow(
+                              color: Colors.black54,
+                              offset: Offset(1, 1),
+                            ),
                           ],
                         ),
                         child: FittedBox(
@@ -693,12 +725,12 @@ class DynamicShelfStockWidget extends StatelessWidget {
                             justRestocked
                                 ? '+1 📦 ($visibleStock/$maxCapacity)'
                                 : justPicked
-                                    ? '-1 ✅ (x$visibleStock)'
-                                    : isRestockTarget
-                                        ? (isFull
-                                            ? '✅ PUNO ($visibleStock/$maxCapacity)'
-                                            : '+1 ${item.name.split(' ').first} ($visibleStock/$maxCapacity)')
-                                        : '${item.name.split(' ').first} x$visibleStock',
+                                ? '-1 ✅ (x$visibleStock)'
+                                : isRestockTarget
+                                ? (isFull
+                                    ? '✅ PUNO ($visibleStock/$maxCapacity)'
+                                    : '+1 ${item.name.split(' ').first} ($visibleStock/$maxCapacity)')
+                                : '${item.name.split(' ').first} x$visibleStock',
                             size: 8.5,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -854,9 +886,7 @@ class DynamicShelfStockWidget extends StatelessWidget {
       // 2. Top stacked row resting cleanly ON TOP of the bottom items (following the same shelf angle!)
       for (int i = 0; i < topCount; i++) {
         // Stagger nicely above bottom items
-        final t = topCount == 1
-            ? 0.50
-            : (0.22 + (i / (topCount - 1)) * 0.56);
+        final t = topCount == 1 ? 0.50 : (0.22 + (i / (topCount - 1)) * 0.56);
         final perspScale = 0.88 + t * 0.16;
         final itemH = baseH * perspScale;
         final itemW = (zw / perRow) * 0.92;
@@ -956,7 +986,9 @@ class DynamicShelfStockWidget extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: const Color(0xFF8C7964),
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(4)),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(4),
+              ),
               border: Border.all(color: const Color(0xFF4A3B2C), width: 1.8),
             ),
           ),
@@ -1047,9 +1079,10 @@ class CustomerOrderChecklistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = (secondsLeft / maxSeconds).clamp(0.0, 1.0);
-    final Color timerColor = secondsLeft > 20
-        ? const Color(0xFF2ECC71)
-        : secondsLeft > 10
+    final Color timerColor =
+        secondsLeft > 20
+            ? const Color(0xFF2ECC71)
+            : secondsLeft > 10
             ? const Color(0xFFF39C12)
             : const Color(0xFFE74C3C);
 
@@ -1060,9 +1093,10 @@ class CustomerOrderChecklistCard extends StatelessWidget {
         color: const Color(0xEB1B242B),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: allPicked
-              ? const Color(0xFF2ECC71)
-              : secondsLeft <= 10
+          color:
+              allPicked
+                  ? const Color(0xFF2ECC71)
+                  : secondsLeft <= 10
                   ? const Color(0xFFE74C3C)
                   : const Color(0xFFF1C40F),
           width: 2.2,
@@ -1155,9 +1189,15 @@ class CustomerOrderChecklistCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
-                      color: done ? const Color(0xFF1E8449) : const Color(0xFF2C3E50),
+                      color:
+                          done
+                              ? const Color(0xFF1E8449)
+                              : const Color(0xFF2C3E50),
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: PixelText(
@@ -1204,7 +1244,10 @@ class CustomerOrderChecklistCard extends StatelessWidget {
                     ? '⚡ BILIS! Pindutin ang dilaw na estante!'
                     : '👆 Kunin sa estante/counter!',
                 size: 8,
-                color: secondsLeft <= 12 ? const Color(0xFFFFD54F) : Colors.white70,
+                color:
+                    secondsLeft <= 12
+                        ? const Color(0xFFFFD54F)
+                        : Colors.white70,
                 textAlign: TextAlign.center,
               ),
             ),

@@ -13,12 +13,13 @@ void main() {
       expect(state.money, GameConstants.startingMoney);
       expect(state.storeOpen, false);
       expect(state.hasPermit, false);
-      expect(state.getStock('kape'), 5);
+      expect(state.getStock('kape'), 0); // 0 stock on Day 1: player earns & buys goods!
       expect(state.getStock('yosi'), 0); // Yosi needs permit, starts at 0
     });
 
     test('Selling items decreases inventory and increases money', () {
       final state = GameState.newGame();
+      state.inventory['kape'] = 5; // Stock goods for sale test
       final initialMoney = state.money;
       final kapeStock = state.getStock('kape');
 
@@ -82,6 +83,7 @@ void main() {
       original.money = 1250.0;
       original.day = 4;
       original.hasPermit = true;
+      original.inventory['kape'] = 5;
       original.sellItem('kape', 3);
 
       final jsonString = original.serialize();
@@ -95,12 +97,12 @@ void main() {
 
     test('Wholesale box purchase, pickup from rack, and tap-by-tap shelf restocking until full', () {
       final state = GameState.newGame();
-      expect(state.getStock('kape'), 5); // starts with 5 on shelf
+      expect(state.getStock('kape'), 0); // starts with 0 on shelf
       expect(state.getBoxStock('kape'), 0);
 
       // Buy 6 Kape wholesale box from supermarket -> lands on bodega rack, NOT front shelf yet
       expect(state.buyWholesaleBox('kape', 6), true);
-      expect(state.getStock('kape'), 5);
+      expect(state.getStock('kape'), 0);
       expect(state.getBoxStock('kape'), 6);
 
       // Pick up Kape box from rack
@@ -113,20 +115,15 @@ void main() {
       // Wrong shelf rejects restock
       expect(state.restockOneFromHeldBox('shampoo'), RestockResult.wrongShelf);
 
-      // Tap 5 times to fill shelf from 5 -> 10 (maxShelfCapacity)
+      // Tap 6 times to fill shelf from 0 -> 6 (maxShelfCapacity is 10)
       for (int i = 0; i < 5; i++) {
         expect(state.restockOneFromHeldBox('kape'), RestockResult.restocked);
       }
-      expect(state.getStock('kape'), GameState.maxShelfCapacity);
-      expect(state.heldBoxQty, 1); // 1 left in box!
-
-      // 6th tap reports shelfFull
-      expect(state.restockOneFromHeldBox('kape'), RestockResult.shelfFull);
-
-      // Put leftover box back down on rack
-      state.putDownHeldBox();
-      expect(state.isHoldingBox, false);
-      expect(state.getBoxStock('kape'), 1);
+      // 6th tap empties the box!
+      expect(state.restockOneFromHeldBox('kape'), RestockResult.restockedAndBoxEmpty);
+      expect(state.getStock('kape'), 6);
+      expect(state.heldBoxQty, 0); // all 6 placed on shelf!
+      expect(state.isHoldingBox, false); // box is now discarded
     });
 
     test('Computer online order delivers boxes to Garage and triggers arrival alert', () {
@@ -153,9 +150,9 @@ void main() {
       expect(state.getGarageBoxStock('kape'), 0);
       expect(state.hasNewDeliveryAlert, false);
 
-      // Restock 1 Kape from held box onto front shelf (5 -> 6)
+      // Restock 1 Kape from held box onto front shelf (0 -> 1)
       expect(state.restockOneFromHeldBox('kape'), RestockResult.restocked);
-      expect(state.getStock('kape'), 6);
+      expect(state.getStock('kape'), 1);
       expect(state.heldBoxQty, 3);
     });
   });

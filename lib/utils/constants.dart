@@ -170,12 +170,11 @@ class GameConstants {
     ),
   ];
 
-  // ── Starting inventory (5 of each basic item) ─────────────────────
+  // ── Starting inventory (0 stock on Day 1: player earns money & buys goods!) ──
   static Map<String, int> get startingInventory {
     final inv = <String, int>{};
     for (final item in allItems) {
-      // Start with 5 of everything except items that need a permit
-      inv[item.id] = item.needsPermit ? 0 : 5;
+      inv[item.id] = 0;
     }
     return inv;
   }
