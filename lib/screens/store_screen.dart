@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../utils/constants.dart';
 import '../utils/item_image_data.dart';
+import '../utils/store_back_image_data.dart';
 import '../services/save_manager.dart';
 import '../services/sound_service.dart';
 import '../widgets/pixel_text.dart';
@@ -1309,13 +1310,22 @@ class _StoreScreenState extends State<StoreScreen>
               // 1. 16-BIT PIXEL ART SARI-SARI STORE (Harap: Bintana & Window | Likod: Estante ng Paninda)
               Positioned.fill(
                 child: _isFacingBack
-                    ? Image.asset(
-                        'assets/images/store_back_view.jpg',
-                        gaplessPlayback: true,
-                        width: w,
-                        height: h,
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.none, // Sharp retro pixels
+                    ? Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          PixelBackStoreShelves(width: w, height: h),
+                          Image.memory(
+                            StoreBackImageData.bytes,
+                            gaplessPlayback: true,
+                            width: w,
+                            height: h,
+                            fit: BoxFit.fill,
+                            filterQuality: FilterQuality.none, // Sharp retro pixels
+                            errorBuilder: (context, error, stackTrace) {
+                              return PixelBackStoreShelves(width: w, height: h);
+                            },
+                          ),
+                        ],
                       )
                     : Image.memory(
                         state.storeOpen
@@ -1512,11 +1522,11 @@ class _StoreScreenState extends State<StoreScreen>
               ),
 
               // 5. DYNAMIC LIVE INVENTORY ON SHELVES, HANGING ROD & COUNTER
-              // In Harap View: Front counter items (Candy, Itlog, Yosi)
-              // In Likod View: All 12 items on back wall shelves & hanging rail!
+              // In Harap View: All goods including hanging sachets (Kape, Shampoo, Sabon, Chichirya) + Shelves + Counter!
+              // In Likod View: All 12 items on back wall wooden estante & hanging rail!
               for (final zone in (_isFacingBack
                   ? ShelfHotspotZone.backViewZones
-                  : ShelfHotspotZone.frontViewZones))
+                  : ShelfHotspotZone.allZones))
                 () {
                   final item = GameConstants.itemById(zone.itemId);
                   if (item == null) return const SizedBox.shrink();

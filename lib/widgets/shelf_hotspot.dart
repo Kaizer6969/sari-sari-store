@@ -380,6 +380,185 @@ class ShelfHotspotZone {
   ];
 }
 
+/// 16-Bit Pixel-Art Wooden Shelves Framework for the Back Store View
+/// Draws authentic wooden estante cubbies, steel hanging rod, and counter table
+class PixelBackStoreShelves extends StatelessWidget {
+  final double width;
+  final double height;
+
+  const PixelBackStoreShelves({
+    super.key,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final w = width;
+    final h = height;
+
+    return Stack(
+      children: [
+        // 1. Cozy wooden wall background
+        Positioned.fill(
+          child: Container(
+            color: const Color(0xFF2C1E14),
+          ),
+        ),
+
+        // 2. Beaded curtain / doorway on the left to Bodega
+        Positioned(
+          left: w * 0.04,
+          top: h * 0.18,
+          width: w * 0.22,
+          height: h * 0.72,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B110B),
+              border: Border.all(color: const Color(0xFF4A3525), width: 3),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                9,
+                (i) => Container(
+                  width: 2,
+                  color: (i % 2 == 0)
+                      ? const Color(0xFF8D6E63)
+                      : const Color(0xFFD7CCC8),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // 3. Upper Steel Hanging Rod for Sachets & Chips (y = 0.312 * h)
+        Positioned(
+          left: w * 0.32,
+          right: w * 0.14,
+          top: h * 0.310,
+          height: 6,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF37474F),
+              borderRadius: BorderRadius.circular(2),
+              border: Border.all(color: const Color(0xFF263238), width: 1),
+              boxShadow: const [
+                BoxShadow(color: Colors.black54, offset: Offset(0, 2)),
+              ],
+            ),
+          ),
+        ),
+        // Mounting hooks along the metal rod
+        for (final frac in [0.40, 0.51, 0.62, 0.75])
+          Positioned(
+            left: w * frac - 3,
+            top: h * 0.306,
+            width: 6,
+            height: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF78909C),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+        // 4. Main Wooden Estante (Shelves Unit) Cabinet
+        // Spans x: 0.33 to 0.76, y: 0.465 to 0.77
+        Positioned(
+          left: w * 0.33,
+          width: w * 0.43,
+          top: h * 0.470,
+          height: h * 0.295,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF4E342E),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFF2E1C14), width: 4),
+              boxShadow: const [
+                BoxShadow(color: Colors.black87, offset: Offset(3, 4)),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Horizontal wooden plank dividing top tier and middle tier
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: h * 0.148,
+                  height: 6,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF795548),
+                      border: Border.all(color: const Color(0xFF2E1C14), width: 1),
+                    ),
+                  ),
+                ),
+                // Vertical divider 1 (top tier)
+                Positioned(
+                  left: w * 0.135,
+                  top: 0,
+                  height: h * 0.148,
+                  width: 5,
+                  child: Container(color: const Color(0xFF2E1C14)),
+                ),
+                // Vertical divider 2 (top tier)
+                Positioned(
+                  left: w * 0.275,
+                  top: 0,
+                  height: h * 0.148,
+                  width: 5,
+                  child: Container(color: const Color(0xFF2E1C14)),
+                ),
+                // Vertical divider (middle tier)
+                Positioned(
+                  left: w * 0.140,
+                  top: h * 0.148,
+                  bottom: 0,
+                  width: 5,
+                  child: Container(color: const Color(0xFF2E1C14)),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 5. Polished Dark Wooden Counter Table (for Candy, Itlog, Yosi)
+        Positioned(
+          left: w * 0.31,
+          width: w * 0.48,
+          top: h * 0.765,
+          height: h * 0.135,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF3E2723),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFF1B0000), width: 3),
+              boxShadow: const [
+                BoxShadow(color: Colors.black87, offset: Offset(2, 4)),
+              ],
+            ),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: 7,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF6D4C41),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFF2E1C14), width: 1.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Renders the ACTUAL live pixel-art stock on a shelf/rod/counter and handles tapping to grab OR restock 1 item!
 class DynamicShelfStockWidget extends StatelessWidget {
   final ShelfHotspotZone zone;
