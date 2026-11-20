@@ -5,6 +5,7 @@ import '../models/game_state.dart';
 import '../utils/constants.dart';
 import '../utils/item_image_data.dart';
 import '../services/save_manager.dart';
+import '../services/sound_service.dart';
 import '../widgets/pixel_text.dart';
 import '../widgets/pixel_button.dart';
 import '../widgets/pixel_customer_sprite.dart';
@@ -399,6 +400,7 @@ class _StoreScreenState extends State<StoreScreen>
       });
 
       if (_allItemsPicked) {
+        _speakCustomer(customer, customText: 'Salamat! Magkano po lahat?');
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -546,6 +548,57 @@ class _StoreScreenState extends State<StoreScreen>
     });
 
     _startCustomerPatienceTimer();
+    if (_currentCustomer != null) {
+      _speakCustomer(_currentCustomer!);
+    }
+  }
+
+  double _customerVoicePitch(CustomerType? type) {
+    if (type == null) return 1.0;
+    switch (type) {
+      case CustomerType.bongbong:
+        return 1.45;
+      case CustomerType.tinay:
+        return 1.35;
+      case CustomerType.customerGirl:
+        return 1.15;
+      case CustomerType.mangBoy:
+        return 0.85;
+      case CustomerType.totoyTambay:
+        return 1.05;
+      case CustomerType.regularGuy:
+        return 0.95;
+      case CustomerType.scammer:
+        return 1.25;
+      case CustomerType.lolaConching:
+        return 0.90;
+      case CustomerType.alingNena:
+        return 1.10;
+    }
+  }
+
+  double _customerVoiceRate(CustomerType? type) {
+    if (type == null) return 1.0;
+    switch (type) {
+      case CustomerType.scammer:
+        return 1.20;
+      case CustomerType.bongbong:
+      case CustomerType.tinay:
+        return 1.05;
+      case CustomerType.lolaConching:
+        return 0.85;
+      case CustomerType.mangBoy:
+        return 0.95;
+      default:
+        return 1.0;
+    }
+  }
+
+  void _speakCustomer(CustomerOrder customer, {String? customText}) {
+    final text = customText ?? customer.speechLine;
+    final pitch = _customerVoicePitch(customer.persona?.type);
+    final rate = _customerVoiceRate(customer.persona?.type);
+    SoundService.speakCustomerText(text, pitch: pitch, rate: rate);
   }
 
   String _personaAvatar(CustomerType type) {
@@ -589,6 +642,9 @@ class _StoreScreenState extends State<StoreScreen>
 
     // Must gather ALL items from the store shelves before selling!
     if (!_allItemsPicked) {
+      if (_currentCustomer != null) {
+        _speakCustomer(_currentCustomer!);
+      }
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -610,6 +666,7 @@ class _StoreScreenState extends State<StoreScreen>
     });
 
     if (customer.isGCash) {
+      _speakCustomer(customer, customText: 'Naka GCash na po ako!');
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -628,6 +685,7 @@ class _StoreScreenState extends State<StoreScreen>
             ),
       );
     } else {
+      _speakCustomer(customer, customText: 'Magkano po lahat?');
       showDialog(
         context: context,
         barrierDismissible: false,
