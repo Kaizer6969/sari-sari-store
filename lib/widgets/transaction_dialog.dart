@@ -373,11 +373,18 @@ class _TransactionDialogState extends State<TransactionDialog>
 
                 // 4. CENTER-BOTTOM: Open Cash Drawer (Kaha)
                 Positioned(
-                  bottom: 10,
-                  left: 275,
-                  width: 420,
-                  height: 215,
+                  bottom: 8,
+                  left: 270,
+                  width: 430,
+                  height: 236,
                   child: _buildCashDrawer(),
+                ),
+
+                // Customer resting hand on the wooden counter table above the drawer
+                Positioned(
+                  bottom: 238,
+                  left: 360,
+                  child: _buildCustomerRestingHand(),
                 ),
 
                 // 5. RIGHT: Action Button "GIVE CHANGE"
@@ -974,75 +981,151 @@ class _TransactionDialogState extends State<TransactionDialog>
   }
 
   // ==========================================
-  // SECTION 4: OPEN CASH DRAWER (KAHA)
+  // SECTION 4: OPEN CASH DRAWER (KAHA) - 1:1 REPLICA
   // ==========================================
   Widget _buildCashDrawer() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF262C33),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF161A1F), width: 4),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black87,
-            offset: Offset(0, 8),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Upper Row: 5 Vertical Bill Trays with Chrome Spring Clips
-          Expanded(
-            flex: 6,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Row(
-                children: [
-                  _buildBillCompartment(20, const Color(0xFFE67E22)),
-                  const SizedBox(width: 3),
-                  _buildBillCompartment(50, const Color(0xFFE74C3C)),
-                  const SizedBox(width: 3),
-                  _buildBillCompartment(100, const Color(0xFF8E44AD)),
-                  const SizedBox(width: 3),
-                  _buildBillCompartment(500, const Color(0xFFF1C40F)),
-                  const SizedBox(width: 3),
-                  _buildBillCompartment(1000, const Color(0xFF2980B9)),
-                ],
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Drawer Housing & Interior
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF282D35),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
+              border: Border.all(color: const Color(0xFF16191D), width: 3),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black87,
+                  offset: Offset(0, 4),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Upper Row: EXACT 4 Bill Trays (₱20, ₱50, ₱100, ₱1000/₱500)
+                Expanded(
+                  flex: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                    child: Row(
+                      children: [
+                        _buildBillCompartment(20, const Color(0xFFE87722)),
+                        const SizedBox(width: 3),
+                        _buildBillCompartment(50, const Color(0xFFE03A3E)),
+                        const SizedBox(width: 3),
+                        _buildBillCompartment(100, const Color(0xFF7E4B9B)),
+                        const SizedBox(width: 3),
+                        _buildBillCompartment(1000, const Color(0xFF2575A8)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Heavy Divider between bills and coins
+                Container(
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1A1D22),
+                    border: Border(
+                      top: BorderSide(color: Color(0xFF383F4A), width: 1),
+                      bottom: BorderSide(color: Color(0xFF101215), width: 1),
+                    ),
+                  ),
+                ),
+
+                // Lower Row: EXACT 3 Coin Trays (₱1, ₱5, ₱10)
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                    child: Row(
+                      children: [
+                        _buildCoinWell(1),
+                        const SizedBox(width: 3),
+                        _buildCoinWell(5),
+                        const SizedBox(width: 3),
+                        _buildCoinWell(10),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
 
-          // Divider between bill trays and coin wells
-          Container(
-            height: 3,
-            color: const Color(0xFF161A1F),
-          ),
-
-          // Lower Row: 4 Coin Trays (Mga Barya)
-          Expanded(
-            flex: 4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Row(
-                children: [
-                  _buildCoinCompartment(1, '₱1 Silver'),
-                  const SizedBox(width: 4),
-                  _buildCoinCompartment(5, '₱5 Silver'),
-                  const SizedBox(width: 4),
-                  _buildCoinCompartment(10, '₱10 Gold'),
-                  const SizedBox(width: 4),
-                  _buildCoinCompartment(20, '₱20 Bimetal'),
-                ],
+        // Front Face of Drawer (Angled down with circular keyhole lock in center)
+        Container(
+          height: 32,
+          decoration: BoxDecoration(
+            color: const Color(0xFF3A404A),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(6)),
+            border: Border.all(color: const Color(0xFF22262C), width: 2.5),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black87,
+                offset: Offset(0, 6),
+                blurRadius: 8,
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Top bevel highlight lip
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 2,
+                child: Container(color: const Color(0xFF626B77)),
+              ),
+              // Circular Keyhole Lock in Center
+              Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4A525D),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF24282F), width: 1.5),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black38, offset: Offset(0, 1)),
+                  ],
+                ),
+                child: Center(
+                  child: Container(
+                    width: 2.2,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF14171A),
+                      borderRadius: BorderRadius.circular(0.5),
+                    ),
+                  ),
+                ),
+              ),
+              // Subtle paint scratch mark on upper-right edge
+              Positioned(
+                right: 32,
+                top: 3,
+                child: Container(
+                  width: 10,
+                  height: 1.5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6A7482),
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  /// Bill Compartment with authentic metal spring clip
+  /// Bill Compartment with authentic Philippine banknote & chrome spring clip
   Widget _buildBillCompartment(int amount, Color themeColor) {
     return Expanded(
       child: GestureDetector(
@@ -1052,48 +1135,48 @@ class _TransactionDialogState extends State<TransactionDialog>
         child: Container(
           key: _billKeys[amount],
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2228),
-            borderRadius: BorderRadius.circular(4),
+            color: const Color(0xFF1B1E23),
+            borderRadius: BorderRadius.circular(3),
             border: Border.all(color: const Color(0xFF101317), width: 1.5),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // 1. Stacked Bills Background (depth effect)
+              // 1. Stacked Bills Background (Depth effect)
               Positioned(
-                bottom: 4,
+                bottom: 5,
                 child: Container(
-                  width: 64,
-                  height: 95,
+                  width: 72,
+                  height: 105,
                   decoration: BoxDecoration(
-                    color: themeColor.withValues(alpha: 0.65),
-                    borderRadius: BorderRadius.circular(3),
+                    color: themeColor.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               Positioned(
-                bottom: 2,
+                bottom: 3,
                 child: Container(
-                  width: 66,
-                  height: 97,
+                  width: 74,
+                  height: 107,
                   decoration: BoxDecoration(
-                    color: themeColor.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(3),
+                    color: themeColor.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              // Top visible bill
+              // 2. Top visible Philippine banknote
               Positioned(
                 bottom: 0,
                 child: _buildBillWidget(
                   amount,
-                  width: 68,
-                  height: 100,
+                  width: 76,
+                  height: 110,
                   isVertical: true,
                 ),
               ),
 
-              // 2. Chrome Spring Clip over bills (like real cash drawers!)
+              // 3. Detailed Chrome Hold-Down Spring Clip (1:1 with photo!)
               Positioned.fill(
                 child: IgnorePointer(
                   child: CustomPaint(
@@ -1102,25 +1185,30 @@ class _TransactionDialogState extends State<TransactionDialog>
                 ),
               ),
 
-              // 3. Denomination Badge at top
-              Positioned(
-                top: 2,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: themeColor, width: 1),
-                  ),
-                  child: PixelText(
-                    '₱$amount',
-                    size: 9,
-                    color: Colors.white,
-                    hasShadow: false,
+              // 4. Subtle top switcher for ₱1000/₱500 bills
+              if (amount == 1000)
+                Positioned(
+                  top: 2,
+                  right: 3,
+                  child: GestureDetector(
+                    key: const ValueKey('bill_500'),
+                    onTap: () => _addMoneyWithAnimation(500, false),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1C40F).withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(color: Colors.black54, width: 0.8),
+                      ),
+                      child: const PixelText(
+                        '₱500',
+                        size: 7,
+                        color: Colors.black,
+                        hasShadow: false,
+                      ),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -1128,8 +1216,8 @@ class _TransactionDialogState extends State<TransactionDialog>
     );
   }
 
-  /// Coin Compartment Well
-  Widget _buildCoinCompartment(int amount, String label) {
+  /// Exact 3 Coin Wells (₱1, ₱5, ₱10) with multi-coin stacks matching reference photo
+  Widget _buildCoinWell(int amount) {
     return Expanded(
       child: GestureDetector(
         key: ValueKey('coin_$amount'),
@@ -1138,9 +1226,9 @@ class _TransactionDialogState extends State<TransactionDialog>
         child: Container(
           key: _coinKeys[amount],
           decoration: BoxDecoration(
-            color: const Color(0xFF1B1F24),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFF0F1316), width: 2),
+            color: const Color(0xFF1B1E23),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: const Color(0xFF0F1215), width: 2),
             boxShadow: const [
               BoxShadow(
                 color: Colors.black54,
@@ -1152,49 +1240,26 @@ class _TransactionDialogState extends State<TransactionDialog>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Overlapping coin stack
-              Positioned(
-                bottom: 6,
-                child: SizedBox(
-                  width: 44,
-                  height: 28,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: 2,
-                        bottom: 0,
-                        child: Transform.rotate(
-                          angle: -0.12,
-                          child: _buildCoinWidget(amount, size: 24),
-                        ),
-                      ),
-                      Positioned(
-                        left: 16,
-                        bottom: 0,
-                        child: Transform.rotate(
-                          angle: 0.15,
-                          child: _buildCoinWidget(amount, size: 26),
-                        ),
-                      ),
-                    ],
-                  ),
+              // Exact 6-coin stacked layout matching reference photo
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: _buildCoinTrayLayout(amount),
                 ),
               ),
 
-              // Coin denomination label
+              // Denomination chip at top
               Positioned(
-                top: 3,
+                top: 2,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
-                    color: Colors.black54,
+                    color: Colors.black87,
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: PixelText(
-                    '₱$amount',
-                    size: 9,
-                    color: Colors.amberAccent,
+                    amount == 10 ? '₱10 Gold' : '₱$amount',
+                    size: 8,
+                    color: amount == 10 ? const Color(0xFFF1C40F) : Colors.white,
                     hasShadow: false,
                   ),
                 ),
@@ -1202,6 +1267,77 @@ class _TransactionDialogState extends State<TransactionDialog>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Renders the exact coin stacks from the photo
+  Widget _buildCoinTrayLayout(int amount) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+
+        return Stack(
+          children: [
+            // Top-Left Stack
+            Positioned(
+              left: w * 0.08,
+              top: h * 0.18,
+              child: _buildStackedCoin(amount, stackCount: 3),
+            ),
+            // Bottom-Left Stack
+            Positioned(
+              left: w * 0.06,
+              top: h * 0.52,
+              child: _buildStackedCoin(amount, stackCount: 3),
+            ),
+            // Top-Center Coin
+            Positioned(
+              left: w * 0.38,
+              top: h * 0.22,
+              child: _buildCoinWidget(amount, size: 24),
+            ),
+            // Bottom-Center Coin
+            Positioned(
+              left: w * 0.36,
+              top: h * 0.54,
+              child: _buildCoinWidget(amount, size: 24),
+            ),
+            // Top-Right Stack
+            Positioned(
+              right: w * 0.08,
+              top: h * 0.18,
+              child: _buildStackedCoin(amount, stackCount: 3),
+            ),
+            // Bottom-Right Stack
+            Positioned(
+              right: w * 0.06,
+              top: h * 0.52,
+              child: _buildStackedCoin(amount, stackCount: 2),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStackedCoin(int amount, {required int stackCount}) {
+    return SizedBox(
+      width: 25,
+      height: 25 + (stackCount * 2.0),
+      child: Stack(
+        children: [
+          for (int i = stackCount - 1; i >= 0; i--)
+            Positioned(
+              top: i * 2.0,
+              child: _buildCoinWidget(
+                amount,
+                size: 24,
+                showText: i == 0,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1394,25 +1530,42 @@ class _TransactionDialogState extends State<TransactionDialog>
     );
   }
 
-  Widget _buildCoinWidget(int amount, {required double size}) {
+  Widget _buildCustomerRestingHand() {
+    return const IgnorePointer(
+      child: SizedBox(
+        width: 72,
+        height: 46,
+        child: CustomPaint(
+          painter: _CustomerRestingHandPainter(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCoinWidget(int amount, {required double size, bool showText = true}) {
     Color outerColor;
     Color? innerColor;
+    Color fontColor = Colors.black87;
 
     switch (amount) {
       case 1:
-        outerColor = const Color(0xFFBDC3C7);
+        outerColor = const Color(0xFFB8C2CC); // Silver ₱1
+        fontColor = const Color(0xFF3E444C);
         break;
       case 5:
-        outerColor = const Color(0xFFCFD8DC);
+        outerColor = const Color(0xFFCFD8DC); // Scalloped nickel ₱5
+        fontColor = const Color(0xFF37474F);
         break;
       case 10:
-        outerColor = const Color(0xFFB0BEC5);
-        innerColor = const Color(0xFFF39C12); // Gold center
+        outerColor = const Color(0xFFD49A2A); // Gold/Brass ₱10
+        innerColor = const Color(0xFFF1C40F);
+        fontColor = const Color(0xFF5A3F0E);
         break;
       case 20:
       default:
-        outerColor = const Color(0xFFE67E22); // Brass outer
-        innerColor = const Color(0xFFCFD8DC); // Nickel center
+        outerColor = const Color(0xFFE67E22);
+        innerColor = const Color(0xFFCFD8DC);
+        fontColor = const Color(0xFF2C3E50);
         break;
     }
 
@@ -1423,12 +1576,12 @@ class _TransactionDialogState extends State<TransactionDialog>
         color: outerColor,
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.black45,
+          color: const Color(0xFF3A4048),
           width: 1.5,
         ),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black38,
+            color: Colors.black45,
             offset: Offset(1, 1),
             blurRadius: 1,
           ),
@@ -1437,32 +1590,123 @@ class _TransactionDialogState extends State<TransactionDialog>
       child: innerColor != null
           ? Center(
               child: Container(
-                width: size * 0.65,
-                height: size * 0.65,
+                width: size * 0.68,
+                height: size * 0.68,
                 decoration: BoxDecoration(
                   color: innerColor,
                   shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: PixelText(
-                    '$amount',
-                    size: size * 0.42,
-                    color: Colors.black87,
-                    hasShadow: false,
-                  ),
-                ),
+                child: showText
+                    ? Center(
+                        child: PixelText(
+                          '$amount',
+                          size: size * 0.40,
+                          color: fontColor,
+                          hasShadow: false,
+                        ),
+                      )
+                    : null,
               ),
             )
-          : Center(
-              child: PixelText(
-                '$amount',
-                size: size * 0.45,
-                color: Colors.black87,
-                hasShadow: false,
-              ),
-            ),
+          : (showText
+              ? Center(
+                  child: PixelText(
+                    '$amount',
+                    size: size * 0.45,
+                    color: fontColor,
+                    hasShadow: false,
+                  ),
+                )
+              : null),
     );
   }
+}
+
+/// Custom painter for the customer's resting hand above the cash drawer
+class _CustomerRestingHandPainter extends CustomPainter {
+  const _CustomerRestingHandPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Forest Green Sleeve (coming down from top)
+    final sleevePaint = Paint()..color = const Color(0xFF2D694B);
+    final outlinePaint = Paint()
+      ..color = const Color(0xFF14241B)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final sleevePath = Path();
+    sleevePath.moveTo(14, 0);
+    sleevePath.lineTo(46, 0);
+    sleevePath.lineTo(44, 14);
+    sleevePath.lineTo(12, 14);
+    sleevePath.close();
+
+    canvas.drawPath(sleevePath, sleevePaint);
+    canvas.drawPath(sleevePath, outlinePaint);
+
+    // Vertical sleeve highlight
+    canvas.drawLine(
+      const Offset(24, 0),
+      const Offset(23, 14),
+      Paint()
+        ..color = const Color(0xFF3E8D62)
+        ..strokeWidth = 2.0,
+    );
+
+    // 2. Black cuff band
+    final cuffPaint = Paint()..color = const Color(0xFF1A201C);
+    final cuffRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(11, 13, 35, 6),
+      const Radius.circular(2),
+    );
+    canvas.drawRRect(cuffRect, cuffPaint);
+
+    // 3. Customer Hand & Spread Fingers resting on wood plank
+    final skinPaint = Paint()..color = const Color(0xFFE29F76);
+    final skinShade = Paint()..color = const Color(0xFFC07B55);
+    final skinBorder = Paint()
+      ..color = const Color(0xFF4A2514)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+
+    final handPath = Path();
+    handPath.moveTo(16, 19);
+    // Thumb resting to the left
+    handPath.quadraticBezierTo(5, 24, 9, 32);
+    handPath.quadraticBezierTo(15, 34, 19, 28);
+    // 4 fingers spread forward
+    handPath.lineTo(21, 42); // Index finger
+    handPath.lineTo(26, 43);
+    handPath.lineTo(28, 27);
+    handPath.lineTo(30, 44); // Middle finger
+    handPath.lineTo(35, 44);
+    handPath.lineTo(37, 27);
+    handPath.lineTo(39, 41); // Ring finger
+    handPath.lineTo(44, 41);
+    handPath.lineTo(45, 26);
+    handPath.lineTo(47, 36); // Pinky finger
+    handPath.lineTo(51, 35);
+    handPath.quadraticBezierTo(49, 23, 39, 19);
+    handPath.close();
+
+    // Drop shadow under hand on wood counter
+    canvas.drawPath(
+      handPath.shift(const Offset(2, 2)),
+      Paint()..color = Colors.black45,
+    );
+    canvas.drawPath(handPath, skinPaint);
+    canvas.drawPath(handPath, skinBorder);
+
+    // Finger knuckle crease lines
+    canvas.drawLine(const Offset(22, 32), const Offset(25, 32), skinShade..strokeWidth = 1.2);
+    canvas.drawLine(const Offset(31, 33), const Offset(34, 33), skinShade);
+    canvas.drawLine(const Offset(40, 31), const Offset(43, 31), skinShade);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Custom painter for wooden counter grain and plank planks
@@ -1493,44 +1737,78 @@ class _WoodPlankPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Custom painter for the chrome spring hold-down clips in the cash drawer
+/// Custom painter for the chrome spring hold-down clips (1:1 with reference photo!)
 class _ChromeSpringClipPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final chromePaint = Paint()
+    final cx = size.width / 2;
+
+    // 1. Top mounting bracket (metal plate)
+    final bracketPaint = Paint()..color = const Color(0xFF6B7480);
+    final bracketBorder = Paint()
+      ..color = const Color(0xFF24282E)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, 10), width: 22, height: 9),
+      const Radius.circular(2),
+    );
+    canvas.drawRRect(rrect, bracketPaint);
+    canvas.drawRRect(rrect, bracketBorder);
+    // Center screw/rivet
+    canvas.drawCircle(Offset(cx, 10), 1.6, Paint()..color = const Color(0xFF1D2024));
+
+    // 2. Coiled tension spring cylinder in center
+    const springTop = 13.0;
+    const springBottom = 34.0;
+    // Spring body shadow
+    canvas.drawRect(
+      Rect.fromLTRB(cx - 3.5, springTop, cx + 3.5, springBottom),
+      Paint()..color = const Color(0xFF2D3239),
+    );
+    // Horizontal coil turns
+    for (double y = springTop; y <= springBottom; y += 3.2) {
+      canvas.drawLine(
+        Offset(cx - 3.5, y),
+        Offset(cx + 3.5, y),
+        Paint()
+          ..color = const Color(0xFFB0BCC8)
+          ..strokeWidth = 1.8,
+      );
+    }
+
+    // 3. Dual steel wire wishbone arms
+    final wirePaint = Paint()
       ..color = const Color(0xFFECEFF1)
       ..strokeWidth = 2.4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final shadowPaint = Paint()
-      ..color = Colors.black45
+    final wireShadow = Paint()
+      ..color = const Color(0xFF262A30)
       ..strokeWidth = 2.4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final cx = size.width / 2;
+    void drawArm(double sign) {
+      final p = Path();
+      p.moveTo(cx + (sign * 5.0), 14);
+      p.lineTo(cx + (sign * 6.5), 36);
+      p.lineTo(cx + (sign * 4.2), 54);
+      p.lineTo(cx + (sign * 4.2), 68);
+      // Curved looped foot resting on bills (1:1 with photo!)
+      p.quadraticBezierTo(
+        cx + (sign * 11.0), 75,
+        cx + (sign * 6.0), 80,
+      );
+      p.lineTo(cx + (sign * 3.5), 76);
 
-    // Spring wishbone / clip arm path
-    final path = Path();
-    path.moveTo(cx - 10, 16);
-    path.lineTo(cx - 6, 48);
-    path.lineTo(cx, 72);
-    path.lineTo(cx + 6, 48);
-    path.lineTo(cx + 10, 16);
+      canvas.drawPath(p.shift(const Offset(1.0, 1.5)), wireShadow);
+      canvas.drawPath(p, wirePaint);
+    }
 
-    // Shadow
-    canvas.drawPath(path.shift(const Offset(1, 1.5)), shadowPaint);
-    // Chrome body
-    canvas.drawPath(path, chromePaint);
-
-    // Spring top coil loops
-    final coilPaint = Paint()
-      ..color = const Color(0xFFB0BEC5)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(Offset(cx - 10, 16), 3.0, coilPaint);
-    canvas.drawCircle(Offset(cx + 10, 16), 3.0, coilPaint);
+    drawArm(-1); // Left wire
+    drawArm(1);  // Right wire
   }
 
   @override
